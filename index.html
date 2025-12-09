@@ -19,29 +19,29 @@
     </div>
 
     <!-- COUNTERS CARD (BAR GRAPH STYLE) -->
-<div class="glass-card counters-card">
-    <div class="counter">
-        <span class="count-label">Registered</span>
-        <div class="bar-container">
-            <div class="bar" id="bar-registered" style="width:0%;"></div>
+    <div class="glass-card counters-card">
+        <div class="counter">
+            <span class="count-label">Registered</span>
+            <div class="bar-container">
+                <div class="bar" id="bar-registered" style="width:0%;"></div>
+            </div>
+            <span class="count-number" id="registered">0</span>
         </div>
-        <span class="count-number" id="registered">0</span>
-    </div>
-    <div class="counter">
-        <span class="count-label">Remaining</span>
-        <div class="bar-container">
-            <div class="bar" id="bar-remaining" style="width:100%;"></div>
+        <div class="counter">
+            <span class="count-label">Remaining</span>
+            <div class="bar-container">
+                <div class="bar" id="bar-remaining" style="width:100%;"></div>
+            </div>
+            <span class="count-number" id="remaining">800</span>
         </div>
-        <span class="count-number" id="remaining">800</span>
-    </div>
-    <div class="counter">
-        <span class="count-label">Target</span>
-        <div class="bar-container">
-            <div class="bar" id="bar-target" style="width:100%;"></div>
+        <div class="counter">
+            <span class="count-label">Target</span>
+            <div class="bar-container">
+                <div class="bar" id="bar-target" style="width:100%;"></div>
+            </div>
+            <span class="count-number" id="target">800</span>
         </div>
-        <span class="count-number" id="target">800</span>
     </div>
-</div>
 
     <!-- FORM CARD -->
     <div class="glass-card form-card">
@@ -59,9 +59,9 @@
 
 </div>
 
-<!-- JS for counters (placeholder) -->
+<!-- JS for counters and bar animation -->
 <script>
-    // Placeholder counts, connect to backend/Supabase later
+    // Placeholder counts
     let registered = 0;
     let remaining = 800;
     let target = 800;
@@ -72,7 +72,27 @@
         document.getElementById('target').textContent = target;
     }
 
+    function updateBarGraph() {
+        const total = 800; // target
+        document.getElementById('bar-registered').style.width = (registered/total*100) + '%';
+        document.getElementById('bar-remaining').style.width = (remaining/total*100) + '%';
+        document.getElementById('bar-target').style.width = '100%';
+    }
+
     updateCounters();
+    updateBarGraph();
+
+    // Example: update dynamically (simulate registration)
+    /*
+    setInterval(() => {
+        if(registered < target){
+            registered += Math.floor(Math.random()*5);
+            remaining = target - registered;
+            updateCounters();
+            updateBarGraph();
+        }
+    }, 3000);
+    */
 </script>
 
 </body>
