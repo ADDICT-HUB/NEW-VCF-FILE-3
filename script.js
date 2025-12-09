@@ -1,12 +1,12 @@
 /* script.js
-   Double-mode: localStorage fallback + optional Supabase (paste keys below)
+   Double-mode: localStorage fallback + optional Supabase
 */
 
 /* ====== SUPABASE KEYS PLACEHOLDER ======
-   When you're ready to use Supabase, paste your info here:
+   Paste your Supabase info here:
 */
-const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltZ294Zmx2b3ZhaGJ1cnRweHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1ODQ2MzUsImV4cCI6MjA4MDE2MDYzNX0.Z8JlmaTgtxoKC5Nn_DxgqA-nWMuw54tf-ALJ9PetCHI"; 
+const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co";      // Your Supabase URL
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltZ294Zmx2b3ZhaGJ1cnRweHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1ODQ2MzUsImV4cCI6MjA4MDE2MDYzNX0.Z8JlmaTgtxoKC5Nn_DxgqA-nWMuw54tf-ALJ9PetCHI"; // Your Supabase anon key
 
 // CONFIG
 const TARGET = 800;
@@ -14,7 +14,7 @@ const TARGET = 800;
 // local fallback 'db'
 let db = { target: TARGET, registered: 0, entries: [] };
 
-// load from localStorage (fallback)
+// localStorage load
 function loadLocal() {
   try {
     const raw = localStorage.getItem('vcf_wildery_db');
@@ -26,7 +26,7 @@ function loadLocal() {
   db.target = TARGET;
 }
 
-// save to localStorage
+// localStorage save
 function saveLocal() {
   try { localStorage.setItem('vcf_wildery_db', JSON.stringify(db)); }
   catch(e){ console.warn('saveLocal error', e) }
@@ -50,10 +50,9 @@ function refreshUI() {
   document.getElementById('tarFill').style.width = '100%';
 }
 
-// local register (fallback)
+// local register
 function registerLocal(name, phone) {
   if (!name || !phone) return { ok:false, msg:'Please fill name & phone.'};
-  // duplicate check
   if (db.entries.some(e => e.phone === phone)) return { ok:false, msg:'Phone already registered.'};
   if (db.registered >= db.target) return { ok:false, msg:'Target reached.'};
 
@@ -63,7 +62,7 @@ function registerLocal(name, phone) {
   return { ok:true };
 }
 
-/* ===== Supabase helpers (lazy load) ===== */
+// Supabase helpers
 let useSupabase = false;
 let supabase = null;
 
@@ -91,13 +90,15 @@ async function initSupabase() {
   }
 }
 
-// fetch counts from supabase (requires table 'vcf_entries')
+// fetch counts from supabase
 async function fetchCountsSupabase() {
   try {
-    const { data, error, count } = await supabase.from('vcf_entries').select('id', { count: 'exact' });
+    const { count, error } = await supabase
+      .from('vcf_entries')
+      .select('*', { count: 'exact', head: true }); // head:true returns count only
+
     if (error) throw error;
-    const registered = Array.isArray(data) ? data.length : 0;
-    db.registered = registered;
+    db.registered = count || 0;
     db.target = TARGET;
     refreshUI();
     return true;
@@ -110,12 +111,15 @@ async function fetchCountsSupabase() {
 // insert entry to supabase
 async function insertSupabase(name, phone) {
   try {
-    // check duplicate by phone
-    const { data: dup, error: dupErr } = await supabase.from('vcf_entries').select('id').eq('phone', phone).limit(1);
+    const { data: dup, error: dupErr } = await supabase
+      .from('vcf_entries')
+      .select('id').eq('phone', phone).limit(1);
     if (dupErr) throw dupErr;
     if (Array.isArray(dup) && dup.length) return { ok:false, msg:'Phone already registered.' };
 
-    const { data, error } = await supabase.from('vcf_entries').insert([{ name, phone }]);
+    const { data, error } = await supabase
+      .from('vcf_entries')
+      .insert([{ name, phone }]);
     if (error) throw error;
     return { ok:true };
   } catch (err) {
@@ -125,24 +129,21 @@ async function insertSupabase(name, phone) {
 }
 
 /* ===== Wiring & events ===== */
-loadLocal();
-refreshUI();
-
-// --- NEW: Initialize Supabase counts on page load ---
-(async function initCounts() {
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    await initSupabase();
-    await fetchCountsSupabase();
-
-    // live update every 5 seconds
-    setInterval(fetchCountsSupabase, 5000);
-  }
-})();
-
 const form = document.getElementById('vcfForm');
 const formMsg = document.getElementById('formMsg');
 const contactBtn = document.getElementById('contactBtn');
 
+async function initPage() {
+  loadLocal();
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    const ok = await initSupabase();
+    if (ok) await fetchCountsSupabase();
+  }
+  refreshUI();
+}
+initPage();
+
+// Form submission
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   formMsg.textContent = '';
@@ -155,7 +156,7 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  // prefer Supabase if keys present
+  // use Supabase if keys exist
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
     const ok = await initSupabase();
     if (ok) {
@@ -181,7 +182,7 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// contact admin (WhatsApp)
+// contact admin
 contactBtn.addEventListener('click', () => {
   window.location.href = 'https://wa.me/254700000000';
 });
