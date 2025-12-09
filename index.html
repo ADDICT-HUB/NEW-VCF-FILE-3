@@ -1,239 +1,249 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: #000;
-      color: #fff;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+}
 
-    .glass-card {
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      padding: 20px;
-      margin: 15px;
-      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
-      transition: box-shadow 0.3s;
-    }
+/* Floating glass cards */
+.glass-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(25px);
+  border-radius: 25px;
+  padding: 25px;
+  margin: 20px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5), 0 0 50px rgba(0,255,255,0.3);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 40px rgba(0,0,0,0.7), 0 0 60px rgba(0,255,255,0.5);
+}
 
-    .glass-card:hover {
-      box-shadow: 0 0 20px #00f, 0 0 40px #ff0 inset;
-    }
+/* Header */
+.header-card .brand {
+  font-size: 32px;
+  font-weight: bold;
+  background: linear-gradient(90deg,#00f,#ff0,#000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px #00f, 0 0 15px #ff0;
+}
+.header-card .subtitle {
+  font-size: 16px;
+  color: #ff0;
+  text-shadow: 0 0 5px #00f, 0 0 10px #ff0;
+}
 
-    .header-card .brand {
-      font-size: 28px;
-      font-weight: bold;
-      color: #00f;
-      text-shadow: 0 0 10px #00f, 0 0 20px #ff0;
-    }
-    .header-card .subtitle {
-      color: #ff0;
-      text-shadow: 0 0 5px #00f, 0 0 10px #ff0;
-    }
+/* Counters */
+.counters-card .counter { margin-bottom: 15px; }
+.counter .label { color: #00f; font-weight: bold; }
+.counter .num { color: #ff0; font-weight: bold; }
 
-    .counters-card .counter {
-      margin-bottom: 15px;
-    }
-    .counter .label { color: #00f; font-weight: bold; }
-    .counter .num { color: #ff0; font-weight: bold; }
+.double-track {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.inner-fill.reg { background: linear-gradient(90deg,#00f,#ff0,#000); height: 100%; transition: width 0.5s; }
+.inner-fill.rem { background: linear-gradient(90deg,#ff0,#00f,#000); height: 100%; transition: width 0.5s; }
+.inner-fill.tar { background: rgba(0,0,0,0.6); height: 100%; }
 
-    .double-track {
-      position: relative;
-      width: 100%;
-      height: 12px;
-      background: #111;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .inner-fill.reg { background: #00f; height: 100%; transition: width 0.5s; }
-    .inner-fill.rem { background: #ff0; height: 100%; transition: width 0.5s; }
-    .inner-fill.tar { background: #000; height: 100%; }
+/* Inputs */
+.vcf-form input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(0,0,0,0.4);
+  color: #00f;
+  font-weight: bold;
+  box-shadow: 0 0 10px #00f inset, 0 0 15px #ff0 inset;
+  transition: box-shadow 0.3s;
+}
+.vcf-form input::placeholder { color: #ff0; }
 
-    .vcf-form input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 15px;
-      border: none;
-      background: rgba(255,255,255,0.05);
-      color: #00f;
-      font-weight: bold;
-      box-shadow: 0 0 5px #00f inset, 0 0 10px #ff0 inset;
-      transition: box-shadow 0.3s;
-    }
-    .vcf-form input::placeholder { color: #ff0; }
+/* Buttons */
+.btn {
+  padding: 14px 25px;
+  border-radius: 30px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  text-decoration: none;
+  margin: 5px;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
 
-    .btn {
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.3s;
-    }
-    .btn.submit {
-      background: linear-gradient(45deg, #00f, #ff0);
-      color: #000;
-      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
-      animation: alive 2s infinite alternate;
-    }
-    .btn.submit:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #00f, 0 0 30px #ff0 inset;
-    }
-    .btn.contact {
-      background: #111;
-      color: #00f;
-      box-shadow: 0 0 5px #00f inset, 0 0 10px #ff0 inset;
-    }
-    .btn.contact:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
-    }
-    .btn.more {
-      background: linear-gradient(45deg, #00f, #ff0, #00f);
-      color: #000;
-      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
-      animation: alive 2s infinite alternate;
-    }
-    .btn.more:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 20px #00f, 0 0 30px #ff0 inset;
-    }
+/* Live gradient button */
+.btn.submit {
+  background: linear-gradient(270deg,#000,#00f,#ff0,#000);
+  background-size: 600% 600%;
+  color: #fff;
+  box-shadow: 0 0 10px #00f, 0 0 15px #ff0 inset;
+  animation: liveGradient 4s ease infinite;
+}
+.btn.submit:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px #00f, 0 0 30px #ff0 inset;
+}
 
-    @keyframes alive {
-      0% { filter: brightness(1); }
-      50% { filter: brightness(1.4); }
-      100% { filter: brightness(1); }
-    }
+.btn.contact {
+  background: #111;
+  color: #00f;
+  box-shadow: 0 0 5px #00f inset, 0 0 10px #ff0 inset;
+}
+.btn.contact:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
+}
 
-    .form-msg { margin-top: 10px; color: #00f; font-weight: bold; }
+.btn.more {
+  background: linear-gradient(270deg,#000,#00f,#ff0,#000);
+  background-size: 600% 600%;
+  color: #fff;
+  box-shadow: 0 0 10px #00f, 0 0 15px #ff0 inset;
+  animation: liveGradient 4s ease infinite;
+}
+.btn.more:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px #00f, 0 0 30px #ff0 inset;
+}
 
-    .page-bg {
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background: radial-gradient(circle at 50% 50%, #000000, #111111);
-      z-index: -1;
-    }
+@keyframes liveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
-    .glow-container .glow-blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: float 10s infinite alternate;
-    }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(20px); }
-    }
-  </style>
+.form-msg { margin-top: 10px; color: #00f; font-weight: bold; text-align: center; }
+
+.page-bg {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: radial-gradient(circle at 50% 50%, #000000, #111111);
+  z-index: -1;
+}
+
+.glow-container .glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.5;
+  animation: float 12s infinite alternate;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(25px); }
+}
+</style>
 </head>
 <body>
 
-  <div class="page-bg" aria-hidden="true"></div>
+<div class="page-bg"></div>
 
-  <div class="glow-container" aria-hidden="true">
-    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:#00f;"></div>
-    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:#ff0;"></div>
-    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:#00f;"></div>
+<div class="glow-container">
+  <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; background:#00f;"></div>
+  <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; background:#ff0;"></div>
+  <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; background:#00f;"></div>
+</div>
+
+<header class="glass-card header-card">
+  <div class="brand">𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</div>
+  <div class="subtitle">𝐍𝐞𝐰 𝐝𝐫𝐨𝐩 • 𝐂𝐥𝐞𝐚𝐧 • 𝐒𝐞𝐜𝐮𝐫𝐞</div>
+</header>
+
+<section class="glass-card counters-card">
+  <div class="counter">
+    <div class="label-row">
+      <span class="label">Registered</span>
+      <span class="num" id="regCount">0</span>
+    </div>
+    <div class="double-track"><div id="regFill" class="inner-fill reg"></div></div>
   </div>
 
-  <header class="glass-card header-card">
-    <div class="brand">𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</div>
-    <div class="subtitle">𝐍𝐞𝐰 𝐝𝐫𝐨𝐩 • 𝐂𝐥𝐞𝐚𝐧 • 𝐒𝐞𝐜𝐮𝐫𝐞</div>
-  </header>
+  <div class="counter">
+    <div class="label-row">
+      <span class="label">Remaining</span>
+      <span class="num" id="remCount">800</span>
+    </div>
+    <div class="double-track"><div id="remFill" class="inner-fill rem"></div></div>
+  </div>
 
-  <section class="glass-card counters-card">
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Registered</span>
-        <span class="num" id="regCount">0</span>
-      </div>
-      <div class="double-track"><div id="regFill" class="inner-fill reg"></div></div>
+  <div class="counter">
+    <div class="label-row">
+      <span class="label">Target</span>
+      <span class="num" id="tarCount">800</span>
+    </div>
+    <div class="double-track"><div id="tarFill" class="inner-fill tar"></div></div>
+  </div>
+</section>
+
+<main class="glass-card form-card">
+  <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
+    <input id="name" name="name" type="text" placeholder="Full name" required />
+    <input id="phone" name="phone" type="tel" placeholder="Phone" required />
+
+    <div class="form-actions">
+      <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
+      <button type="submit" id="submitBtn" class="btn submit">Submit</button>
     </div>
 
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Remaining</span>
-        <span class="num" id="remCount">800</span>
-      </div>
-      <div class="double-track"><div id="remFill" class="inner-fill rem"></div></div>
+    <div style="text-align:center; margin-top:15px;">
+      <a href="https://gurutech-lab.netlify.app/boosting" target="_blank" class="btn more">More</a>
     </div>
 
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Target</span>
-        <span class="num" id="tarCount">800</span>
-      </div>
-      <div class="double-track"><div id="tarFill" class="inner-fill tar"></div></div>
-    </div>
-  </section>
+    <div id="formMsg" class="form-msg"></div>
+  </form>
+</main>
 
-  <main class="glass-card form-card">
-    <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
-      <input id="name" name="name" type="text" placeholder="Full name" required />
-      <input id="phone" name="phone" type="tel" placeholder="Phone (e.g. 2547...)" required />
+<footer class="glass-card footer-card">
+  <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
+</footer>
 
-      <div class="form-actions">
-        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
-        <button type="submit" id="submitBtn" class="btn submit">Submit</button>
-      </div>
+<audio id="bgMusic" loop>
+  <source src="https://files.catbox.moe/ets3nu.mp3" type="audio/mpeg">
+</audio>
 
-      <div class="more-btn-container" style="text-align:center; margin-top:15px;">
-        <a href="https://gurutech-lab.netlify.app/boosting" target="_blank" class="btn more">More</a>
-      </div>
+<script src="script.js"></script>
+<script>
+const music = document.getElementById('bgMusic');
+const form = document.getElementById('vcfForm');
+const formMsg = document.getElementById('formMsg');
+const contactBtn = document.getElementById('contactBtn');
 
-      <div id="formMsg" class="form-msg" aria-live="polite"></div>
-    </form>
-  </main>
+function startMusic() {
+  music.play().catch(err => console.log('Autoplay blocked:', err));
+  document.body.removeEventListener('touchstart', startMusic);
+  document.body.removeEventListener('click', startMusic);
+}
+document.body.addEventListener('touchstart', startMusic, { once:true });
+document.body.addEventListener('click', startMusic, { once:true });
 
-  <footer class="glass-card footer-card">
-    <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
-  </footer>
+contactBtn.addEventListener('click', () => {
+  window.location.href = 'https://wa.me/254735403829';
+});
 
-  <audio id="bgMusic" loop>
-    <source src="https://files.catbox.moe/ets3nu.mp3" type="audio/mpeg">
-  </audio>
-
-  <script src="script.js"></script>
-  <script>
-    const music = document.getElementById('bgMusic');
-    const form = document.getElementById('vcfForm');
-    const formMsg = document.getElementById('formMsg');
-    const contactBtn = document.getElementById('contactBtn');
-
-    // Autoplay music on first interaction
-    function startMusic() {
-      music.play().catch(err => console.log('Autoplay blocked:', err));
-      document.body.removeEventListener('touchstart', startMusic);
-      document.body.removeEventListener('click', startMusic);
-    }
-    document.body.addEventListener('touchstart', startMusic, { once: true });
-    document.body.addEventListener('click', startMusic, { once: true });
-
-    // Contact admin
-    contactBtn.addEventListener('click', () => {
-      window.location.href = 'https://wa.me/254735403829';
-    });
-
-    // Submit redirect to channel
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      formMsg.textContent = 'Registration received. Redirecting...';
-      form.reset();
-      window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
-    });
-  </script>
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  formMsg.textContent = 'Registration received. Redirecting...';
+  form.reset();
+  window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
+});
+</script>
 </body>
 </html>
