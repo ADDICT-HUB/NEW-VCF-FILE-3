@@ -5,36 +5,153 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* === Glass + Neon Theme Styles === */
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: #000;
+      color: #fff;
+    }
+
+    .glass-card {
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 15px;
+      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+    }
+
+    .header-card .brand {
+      font-size: 28px;
+      font-weight: bold;
+      color: #00ff6a;
+      text-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa;
+    }
+    .header-card .subtitle {
+      color: #ffffff;
+      text-shadow: 0 0 5px #00ff6a;
+    }
+
+    .counters-card .counter {
+      margin-bottom: 15px;
+    }
+    .counter .label { color: #00ff6a; font-weight: bold; }
+    .counter .num { color: #fff; font-weight: bold; }
+
+    .double-track {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      background: #111;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .inner-fill.reg { background: #00ff6a; height: 100%; }
+    .inner-fill.rem { background: #ffffff; height: 100%; }
+    .inner-fill.tar { background: #000; height: 100%; }
+
+    .vcf-form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 15px;
+      border: none;
+      background: rgba(255,255,255,0.05);
+      color: #00ff6a;
+      font-weight: bold;
+      box-shadow: 0 0 5px #00ff6a inset;
+    }
+    .vcf-form input::placeholder { color: #ffffff; }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn.submit {
+      background: linear-gradient(135deg, #00ff6a, #00ffaa);
+      color: #000;
+      text-shadow: 0 0 5px #000;
+      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+    }
+    .btn.submit:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ff6a, 0 0 25px #00ffaa inset;
+    }
+    .btn.contact {
+      background: #111;
+      color: #00ff6a;
+      text-shadow: 0 0 5px #00ff6a;
+      box-shadow: 0 0 5px #00ff6a inset;
+    }
+    .btn.contact:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #00ff6a inset;
+    }
+    .btn.more {
+      background: linear-gradient(135deg, #00ff6a, #00ffaa, #000, #fff);
+      color: #000;
+      text-shadow: 0 0 5px #00ff6a, 0 0 10px #00ffaa;
+      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+    }
+    .btn.more:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 15px #00ff6a, 0 0 25px #00ffaa inset;
+    }
+
+    .form-msg { margin-top: 10px; color: #00ff6a; font-weight: bold; }
+
+    .page-bg {
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: radial-gradient(circle at 50% 50%, #000000, #111111);
+      z-index: -1;
+    }
+
+    .glow-container .glow-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: float 10s infinite alternate;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(20px); }
+    }
+
+  </style>
 </head>
 <body>
 
-  <!-- Top subtle animated background -->
   <div class="page-bg" aria-hidden="true"></div>
 
-  <!-- 3D Neon Glowing Blobs -->
   <div class="glow-container" aria-hidden="true">
-    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:maroon;"></div>
-    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:black;"></div>
-    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:white;"></div>
+    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:#00ff6a;"></div>
+    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:#00ffaa;"></div>
+    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:#00ff6a;"></div>
   </div>
 
-  <!-- Header glass card -->
-  <header class="glass-card header-card" role="banner">
+  <header class="glass-card header-card">
     <div class="brand">𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</div>
     <div class="subtitle">𝐍𝐞𝐰 𝐝𝐫𝐨𝐩 • 𝐂𝐥𝐞𝐚𝐧 • 𝐒𝐞𝐜𝐮𝐫𝐞</div>
   </header>
 
-  <!-- Counters glass card -->
-  <section class="glass-card counters-card" aria-label="progress counters">
+  <section class="glass-card counters-card">
     <div class="counter">
       <div class="label-row">
         <span class="label">Registered</span>
         <span class="num" id="regCount">0</span>
       </div>
-      <div class="double-track">
-        <div class="outer-track"></div>
-        <div id="regFill" class="inner-fill reg"></div>
-      </div>
+      <div class="double-track"><div id="regFill" class="inner-fill reg"></div></div>
     </div>
 
     <div class="counter">
@@ -42,10 +159,7 @@
         <span class="label">Remaining</span>
         <span class="num" id="remCount">800</span>
       </div>
-      <div class="double-track">
-        <div class="outer-track"></div>
-        <div id="remFill" class="inner-fill rem"></div>
-      </div>
+      <div class="double-track"><div id="remFill" class="inner-fill rem"></div></div>
     </div>
 
     <div class="counter">
@@ -53,48 +167,38 @@
         <span class="label">Target</span>
         <span class="num" id="tarCount">800</span>
       </div>
-      <div class="double-track">
-        <div class="outer-track"></div>
-        <div id="tarFill" class="inner-fill tar"></div>
-      </div>
+      <div class="double-track"><div id="tarFill" class="inner-fill tar"></div></div>
     </div>
   </section>
 
-  <!-- Form glass card -->
-  <main class="glass-card form-card" role="main">
+  <main class="glass-card form-card">
     <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
-      <label class="sr-only" for="name">Full name</label>
       <input id="name" name="name" type="text" placeholder="Full name" required />
-
-      <label class="sr-only" for="phone">Phone</label>
-      <input id="phone" name="phone" type="tel" placeholder="Phone (any country, digits only)" required />
+      <input id="phone" name="phone" type="tel" placeholder="Phone (e.g. 2547...)" required />
 
       <div class="form-actions">
-  <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
-  <button type="submit" id="submitBtn" class="btn submit">Submit</button>
-</div>
+        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
+        <button type="submit" id="submitBtn" class="btn submit">Submit</button>
+      </div>
 
-<!-- More button under submit -->
-<div class="more-btn-container" style="text-align:center; margin-top:15px;">
-  <a href="https://gurutech-lab.netlify.app/boosting" target="_blank" class="btn more">More</a>
-</div>
+      <!-- More button under submit -->
+      <div class="more-btn-container" style="text-align:center; margin-top:15px;">
+        <a href="https://gurutech-lab.netlify.app/boosting" target="_blank" class="btn more">More</a>
+      </div>
 
       <div id="formMsg" class="form-msg" aria-live="polite"></div>
     </form>
   </main>
 
-  <!-- Footer -->
-  <footer class="glass-card footer-card" role="contentinfo">
+  <footer class="glass-card footer-card">
     <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
   </footer>
 
   <!-- Background music -->
   <audio id="bgMusic" loop>
     <source src="https://files.catbox.moe/ets3nu.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
   </audio>
 
-  <!-- Scripts -->
   <script src="script.js"></script>
   <script>
     const music = document.getElementById('bgMusic');
@@ -102,7 +206,7 @@
     const formMsg = document.getElementById('formMsg');
     const contactBtn = document.getElementById('contactBtn');
 
-    // Start music on first interaction
+    // Autoplay music on first interaction
     function startMusic() {
       music.play().catch(err => console.log('Autoplay blocked:', err));
       document.body.removeEventListener('touchstart', startMusic);
@@ -111,48 +215,18 @@
     document.body.addEventListener('touchstart', startMusic, { once: true });
     document.body.addEventListener('click', startMusic, { once: true });
 
-    // Contact admin button
+    // Contact admin
     contactBtn.addEventListener('click', () => {
       window.location.href = 'https://wa.me/254735403829';
     });
 
-    // Form submission
-    form.addEventListener('submit', async (e) => {
+    // Submit redirect to channel
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-
-      // Validate inputs
-      if (!name) { formMsg.textContent = 'Please enter your name.'; return; }
-      if (!/^\d{6,15}$/.test(phone)) { formMsg.textContent = 'Enter a valid phone number.'; return; }
-
-      // Prevent duplicate in localStorage
-      let db = JSON.parse(localStorage.getItem('vcf_wildery_db') || '{"entries":[]}');
-      if (db.entries.some(e => e.phone === phone)) {
-        formMsg.textContent = 'This phone number is already registered.';
-        return;
-      }
-
-      // Save locally (fallback)
-      db.entries.push({ name, phone, at: new Date().toISOString() });
-      db.registered = db.entries.length;
-      db.target = 800;
-      localStorage.setItem('vcf_wildery_db', JSON.stringify(db));
-
-      // Refresh UI
-      document.getElementById('regCount').textContent = db.registered;
-      document.getElementById('remCount').textContent = Math.max(0, db.target - db.registered);
-      document.getElementById('regFill').style.width = Math.round((db.registered/db.target)*100) + '%';
-      document.getElementById('remFill').style.width = Math.round(((db.target - db.registered)/db.target)*100) + '%';
-
-      // Reset form and redirect
-      form.reset();
       formMsg.textContent = 'Registration received. Redirecting...';
-      setTimeout(() => {
-        window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
-      }, 1000); // slight delay so message shows
+      form.reset();
+      window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
     });
   </script>
-
 </body>
 </html>
