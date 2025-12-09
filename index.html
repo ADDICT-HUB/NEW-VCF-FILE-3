@@ -18,21 +18,30 @@
         <p>Your verification made easy!</p>
     </div>
 
-    <!-- COUNTERS CARD -->
-    <div class="glass-card counters-card">
-        <div class="counter">
-            <span class="count-number" id="registered">0</span>
-            <span class="count-label">Registered</span>
+    <!-- COUNTERS CARD (BAR GRAPH STYLE) -->
+<div class="glass-card counters-card">
+    <div class="counter">
+        <span class="count-label">Registered</span>
+        <div class="bar-container">
+            <div class="bar" id="bar-registered" style="width:0%;"></div>
         </div>
-        <div class="counter">
-            <span class="count-number" id="remaining">800</span>
-            <span class="count-label">Remaining</span>
-        </div>
-        <div class="counter">
-            <span class="count-number" id="target">800</span>
-            <span class="count-label">Target</span>
-        </div>
+        <span class="count-number" id="registered">0</span>
     </div>
+    <div class="counter">
+        <span class="count-label">Remaining</span>
+        <div class="bar-container">
+            <div class="bar" id="bar-remaining" style="width:100%;"></div>
+        </div>
+        <span class="count-number" id="remaining">800</span>
+    </div>
+    <div class="counter">
+        <span class="count-label">Target</span>
+        <div class="bar-container">
+            <div class="bar" id="bar-target" style="width:100%;"></div>
+        </div>
+        <span class="count-number" id="target">800</span>
+    </div>
+</div>
 
     <!-- FORM CARD -->
     <div class="glass-card form-card">
