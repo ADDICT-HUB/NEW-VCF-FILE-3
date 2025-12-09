@@ -2,7 +2,7 @@
    Double-mode: localStorage fallback + Supabase
 */
 
-const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co";
+const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
 
 const TARGET = 800;
