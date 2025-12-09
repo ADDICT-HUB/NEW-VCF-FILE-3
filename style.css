@@ -1,0 +1,90 @@
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, maroon, black);
+    color: white;
+}
+
+.glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 15px;
+    margin: 15px;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.header-card h1 {
+    text-align: center;
+    color: white;
+    font-size: 26px;
+}
+
+.counts {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.count-box {
+    width: 30%;
+    min-width: 100px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.count-box.registered {
+    background: rgba(255,0,0,0.3);
+}
+.count-box.target {
+    background: rgba(255,255,255,0.3);
+}
+.count-box.remaining {
+    background: rgba(0,0,0,0.4);
+}
+
+.form-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input {
+    width: 85%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    margin: 8px 0;
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+
+.submit-btn {
+    margin-top: 10px;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, maroon, black);
+    color: white;
+    font-size: 18px;
+}
+
+.contact-btn {
+    margin-top: 12px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    background: white;
+    color: maroon;
+    font-weight: bold;
+}
+
+.background {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: url('') no-repeat center;
+    z-index:-1;
+}
