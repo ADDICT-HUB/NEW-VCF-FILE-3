@@ -130,3 +130,34 @@ body{
   .form-actions{ flex-direction:column }
   .btn{ padding:14px }
 }
+
+/* ===== 3D GLOWING BLOBS ===== */
+.glow-container {
+    position: fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    pointer-events: none;
+    z-index:0; /* behind all cards */
+    overflow:hidden;
+}
+
+.glow-blob {
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    left: var(--x);
+    top: var(--y);
+    background: var(--color);
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.35;
+    animation: floatBlob 15s infinite alternate ease-in-out;
+    mix-blend-mode: screen;
+}
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -30px) scale(1.1); }
+    100% { transform: translate(-20px, 20px) scale(0.9); }
+}
