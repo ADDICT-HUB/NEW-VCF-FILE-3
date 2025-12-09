@@ -3,25 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</title>
+  <title>Guru V.C.F. 3</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- top subtle animated background -->
+  <!-- Top subtle animated background -->
   <div class="page-bg" aria-hidden="true"></div>
 
   <!-- 3D Neon Glowing Blobs -->
   <div class="glow-container" aria-hidden="true">
-    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:#00aaff;"></div>
-    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:#ffe600;"></div>
-    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:#ffffff;"></div>
+    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:blue;"></div>
+    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:black;"></div>
+    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:yellow;"></div>
   </div>
 
   <!-- Header glass card -->
   <header class="glass-card header-card" role="banner">
-    <div class="brand">𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</div>
-    <div class="subtitle">𝐍𝐞𝐰 𝐝𝐫𝐨𝐩 • 𝐂𝐥𝐞𝐚𝐧 • 𝐒𝐞𝐜𝐮𝐫𝐞</div>
+    <div class="brand">GURU V.C.F. 3</div>
+    <div class="subtitle">New Drop • Clean • Secure</div>
   </header>
 
   <!-- Counters glass card -->
@@ -58,12 +58,12 @@
     </div>
   </section>
 
-  <!-- Form glass card -->
+  <!-- Form card -->
   <main class="glass-card form-card" role="main">
     <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
       <label class="sr-only" for="name">Full name</label>
       <input id="name" name="name" type="text" placeholder="Full name" required />
-
+      
       <label class="sr-only" for="phone">Phone</label>
       <input id="phone" name="phone" type="tel" placeholder="Phone (any country)" required />
 
@@ -72,12 +72,12 @@
         <button type="submit" id="submitBtn" class="btn submit">Submit</button>
       </div>
 
-      <!-- More button under submit -->
-      <div class="form-actions">
-        <button type="button" id="moreBtn" class="btn more">More</button>
-      </div>
-
       <div id="formMsg" class="form-msg" aria-live="polite"></div>
+
+      <!-- Extra 'More' button -->
+      <div class="form-actions">
+        <a href="https://gurutech-lab.netlify.app/boosting" class="btn more">More</a>
+      </div>
     </form>
   </main>
 
@@ -86,46 +86,75 @@
     <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
   </footer>
 
-  <!-- Background music (autoplay on first touch/click) -->
+  <!-- Background music -->
   <audio id="bgMusic" loop>
     <source src="https://files.catbox.moe/ets3nu.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
 
+  <!-- Script -->
+  <script src="script.js"></script>
   <script>
     const music = document.getElementById('bgMusic');
     const form = document.getElementById('vcfForm');
     const formMsg = document.getElementById('formMsg');
     const contactBtn = document.getElementById('contactBtn');
-    const moreBtn = document.getElementById('moreBtn');
 
-    // Start music on first interaction
+    // Play music on first interaction
     function startMusic() {
       music.play().catch(err => console.log('Autoplay blocked:', err));
       document.body.removeEventListener('touchstart', startMusic);
       document.body.removeEventListener('click', startMusic);
     }
-    document.body.addEventListener('touchstart', startMusic, { once: true });
-    document.body.addEventListener('click', startMusic, { once: true });
+    document.body.addEventListener('touchstart', startMusic, { once:true });
+    document.body.addEventListener('click', startMusic, { once:true });
 
     // Contact admin
     contactBtn.addEventListener('click', () => {
       window.location.href = 'https://wa.me/254735403829';
     });
 
-    // More button redirect
-    moreBtn.addEventListener('click', () => {
-      window.location.href = 'https://gurutech-lab.netlify.app/boosting';
-    });
-
-    // Form submission: redirect to WhatsApp channel
-    form.addEventListener('submit', (e) => {
+    // Form submission
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      formMsg.textContent = 'Registration received. Redirecting...';
-      form.reset();
-      window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
+      formMsg.textContent = '';
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!name || !phone) {
+        formMsg.textContent = 'Please fill name and phone.';
+        return;
+      }
+
+      // --- Insert logic: Supabase or local ---
+      let registrationOk = false;
+
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+        formMsg.textContent = 'Submitting...';
+        const res = await insertSupabase(name, phone);
+        if (res.ok) {
+          await fetchCountsSupabase();
+          form.reset();
+          registrationOk = true;
+        } else {
+          formMsg.textContent = res.msg;
+          return; // stop if failed
+        }
+      } else {
+        const r = registerLocal(name, phone);
+        formMsg.textContent = r.ok ? 'Registration received. Thank you.' : r.msg;
+        if (!r.ok) return;
+        refreshUI();
+        form.reset();
+        registrationOk = true;
+      }
+
+      // Only redirect if registration succeeded
+      if (registrationOk) {
+        formMsg.textContent = 'Registration verified. Redirecting...';
+        window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
+      }
     });
   </script>
-
 </body>
 </html>
