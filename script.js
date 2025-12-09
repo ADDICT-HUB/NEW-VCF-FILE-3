@@ -1,20 +1,14 @@
 /* script.js
-   Double-mode: localStorage fallback + optional Supabase
+   Double-mode: localStorage fallback + Supabase
 */
 
-/* ====== SUPABASE KEYS PLACEHOLDER ======
-   Paste your Supabase info here:
-*/
-const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co";      // Your Supabase URL
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY"; // Your Supabase anon key
+const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
 
-// CONFIG
 const TARGET = 800;
-
-// local fallback 'db'
 let db = { target: TARGET, registered: 0, entries: [] };
 
-// localStorage load
+// --- Local Storage ---
 function loadLocal() {
   try {
     const raw = localStorage.getItem('vcf_wildery_db');
@@ -22,17 +16,16 @@ function loadLocal() {
       const obj = JSON.parse(raw);
       if (typeof obj === 'object') db = Object.assign(db, obj);
     }
-  } catch(e){ console.warn('loadLocal error', e) }
+  } catch(e){ console.warn('loadLocal error', e); }
   db.target = TARGET;
 }
 
-// localStorage save
 function saveLocal() {
   try { localStorage.setItem('vcf_wildery_db', JSON.stringify(db)); }
-  catch(e){ console.warn('saveLocal error', e) }
+  catch(e){ console.warn('saveLocal error', e); }
 }
 
-// UI refresh
+// --- UI Refresh ---
 function refreshUI() {
   const reg = db.registered || 0;
   const rem = Math.max(0, db.target - reg);
@@ -42,15 +35,12 @@ function refreshUI() {
   document.getElementById('remCount').textContent = rem;
   document.getElementById('tarCount').textContent = tar;
 
-  const regPct = tar ? Math.round((reg / tar) * 100) : 0;
-  const remPct = tar ? Math.round((rem / tar) * 100) : 0;
-
-  document.getElementById('regFill').style.width = regPct + '%';
-  document.getElementById('remFill').style.width = remPct + '%';
+  document.getElementById('regFill').style.width = Math.round((reg/tar)*100) + '%';
+  document.getElementById('remFill').style.width = Math.round((rem/tar)*100) + '%';
   document.getElementById('tarFill').style.width = '100%';
 }
 
-// local register
+// --- Local Registration ---
 function registerLocal(name, phone) {
   if (!name || !phone) return { ok:false, msg:'Please fill name & phone.'};
   if (db.entries.some(e => e.phone === phone)) return { ok:false, msg:'Phone already registered.'};
@@ -62,73 +52,69 @@ function registerLocal(name, phone) {
   return { ok:true };
 }
 
-// Supabase helpers
-let useSupabase = false;
+// --- Supabase Helpers ---
 let supabase = null;
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('failed to load ' + src));
-    document.head.appendChild(s);
-  });
-}
-
-async function initSupabase() {
+async function loadSupabase() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
-  if (useSupabase) return true;
+  if (supabase) return true;
   try {
-    await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js');
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js';
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('Failed to load Supabase'));
+      document.head.appendChild(s);
+    });
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    useSupabase = true;
     return true;
-  } catch (err) {
-    console.error('initSupabase error', err);
-    return false;
-  }
+  } catch(e){ console.error(e); return false; }
 }
 
-// fetch counts from supabase
+// --- Fetch counts from Supabase ---
 async function fetchCountsSupabase() {
+  if (!supabase) return false;
   try {
     const { count, error } = await supabase
       .from('vcf_entries')
-      .select('*', { count: 'exact', head: true }); // head:true returns count only
-
+      .select('*', { count: 'exact', head: true });
     if (error) throw error;
+
     db.registered = count || 0;
     db.target = TARGET;
     refreshUI();
     return true;
-  } catch (err) {
-    console.error('fetchCountsSupabase error', err);
+  } catch(e){
+    console.error('Supabase fetch error:', e.message || e);
     return false;
   }
 }
 
-// insert entry to supabase
+// --- Insert entry to Supabase ---
 async function insertSupabase(name, phone) {
   try {
     const { data: dup, error: dupErr } = await supabase
       .from('vcf_entries')
-      .select('id').eq('phone', phone).limit(1);
-    if (dupErr) throw dupErr;
-    if (Array.isArray(dup) && dup.length) return { ok:false, msg:'Phone already registered.' };
+      .select('id')
+      .eq('phone', phone)
+      .limit(1);
 
-    const { data, error } = await supabase
+    if (dupErr) throw dupErr;
+    if (dup && dup.length) return { ok:false, msg:'Phone already registered.' };
+
+    const { error } = await supabase
       .from('vcf_entries')
       .insert([{ name, phone }]);
+
     if (error) throw error;
     return { ok:true };
-  } catch (err) {
-    console.error('insertSupabase error', err);
-    return { ok:false, msg:'Submission failed.' };
+  } catch(e) {
+    console.error('Supabase insert error:', e.message || e);
+    return { ok:false, msg: e.message || 'Submission failed.' };
   }
 }
 
-/* ===== Wiring & events ===== */
+// --- Event Wiring ---
 const form = document.getElementById('vcfForm');
 const formMsg = document.getElementById('formMsg');
 const contactBtn = document.getElementById('contactBtn');
@@ -136,7 +122,7 @@ const contactBtn = document.getElementById('contactBtn');
 async function initPage() {
   loadLocal();
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    const ok = await initSupabase();
+    const ok = await loadSupabase();
     if (ok) await fetchCountsSupabase();
   }
   refreshUI();
@@ -147,42 +133,31 @@ initPage();
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   formMsg.textContent = '';
-
-  const name = (document.getElementById('name').value || '').trim();
-  const phone = (document.getElementById('phone').value || '').trim();
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
 
   if (!name || !phone) {
     formMsg.textContent = 'Please fill name and phone.';
     return;
   }
 
-  // use Supabase if keys exist
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    const ok = await initSupabase();
-    if (ok) {
-      formMsg.textContent = 'Submitting...';
-      const res = await insertSupabase(name, phone);
-      formMsg.textContent = res.ok ? 'Registration received. Thank you.' : (res.msg || 'Failed.');
-      if (res.ok) {
-        await fetchCountsSupabase();
-        form.reset();
-      }
-      return;
-    }
+  if (SUPABASE_URL && SUPABASE_ANON_KEY && supabase) {
+    formMsg.textContent = 'Submitting...';
+    const res = await insertSupabase(name, phone);
+    formMsg.textContent = res.ok ? 'Registration received. Thank you.' : res.msg;
+    if (res.ok) await fetchCountsSupabase();
+    if (res.ok) form.reset();
+    return;
   }
 
   // fallback: local
   const r = registerLocal(name, phone);
-  if (r.ok) {
-    formMsg.textContent = 'Registration received. Thank you.';
-    refreshUI();
-    form.reset();
-  } else {
-    formMsg.textContent = r.msg || 'Submission failed.';
-  }
+  formMsg.textContent = r.ok ? 'Registration received. Thank you.' : r.msg;
+  if (r.ok) refreshUI();
+  if (r.ok) form.reset();
 });
 
-// contact admin
+// Contact admin
 contactBtn.addEventListener('click', () => {
   window.location.href = 'https://wa.me/254700000000';
 });
