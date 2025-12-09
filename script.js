@@ -1,5 +1,5 @@
 /* script.js
-   Double-mode: localStorage fallback + Supabase
+   VCF Registration with Supabase + global number validation + auto redirect + background music
 */
 
 const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
@@ -40,10 +40,19 @@ function refreshUI() {
   document.getElementById('tarFill').style.width = '100%';
 }
 
+// --- Validate phone globally ---
+function isValidPhone(phone) {
+  // allow only numbers, at least 6 digits
+  const cleaned = phone.replace(/\D/g, '');
+  return cleaned.length >= 6;
+}
+
 // --- Local Registration ---
 function registerLocal(name, phone) {
   if (!name || !phone) return { ok:false, msg:'Please fill name & phone.'};
+  if (!isValidPhone(phone)) return { ok:false, msg:'Invalid phone number.'};
   if (db.entries.some(e => e.phone === phone)) return { ok:false, msg:'Phone already registered.'};
+  if (db.entries.some(e => e.name.toLowerCase() === name.toLowerCase())) return { ok:false, msg:'Name already registered.'};
   if (db.registered >= db.target) return { ok:false, msg:'Target reached.'};
 
   db.entries.push({ name, phone, at: new Date().toISOString() });
@@ -93,14 +102,23 @@ async function fetchCountsSupabase() {
 // --- Insert entry to Supabase ---
 async function insertSupabase(name, phone) {
   try {
+    if (!isValidPhone(phone)) return { ok:false, msg:'Invalid phone number.' };
+
     const { data: dup, error: dupErr } = await supabase
       .from('vcf_entries')
       .select('id')
       .eq('phone', phone)
       .limit(1);
-
     if (dupErr) throw dupErr;
     if (dup && dup.length) return { ok:false, msg:'Phone already registered.' };
+
+    const { data: dupName, error: dupNameErr } = await supabase
+      .from('vcf_entries')
+      .select('id')
+      .ilike('name', name)
+      .limit(1);
+    if (dupNameErr) throw dupNameErr;
+    if (dupName && dupName.length) return { ok:false, msg:'Name already registered.' };
 
     const { error } = await supabase
       .from('vcf_entries')
@@ -118,6 +136,7 @@ async function insertSupabase(name, phone) {
 const form = document.getElementById('vcfForm');
 const formMsg = document.getElementById('formMsg');
 const contactBtn = document.getElementById('contactBtn');
+const music = document.getElementById('bgMusic');
 
 async function initPage() {
   loadLocal();
@@ -129,7 +148,21 @@ async function initPage() {
 }
 initPage();
 
-// Form submission
+// Start music on first interaction
+function startMusic() {
+  music.play().catch(err => console.log('Autoplay blocked:', err));
+  document.body.removeEventListener('touchstart', startMusic);
+  document.body.removeEventListener('click', startMusic);
+}
+document.body.addEventListener('touchstart', startMusic, { once: true });
+document.body.addEventListener('click', startMusic, { once: true });
+
+// Contact admin
+contactBtn.addEventListener('click', () => {
+  window.location.href = 'https://wa.me/254735403829';
+});
+
+// Form submission: validate, store, redirect
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   formMsg.textContent = '';
@@ -141,23 +174,27 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
+  // Prefer Supabase if available
   if (SUPABASE_URL && SUPABASE_ANON_KEY && supabase) {
     formMsg.textContent = 'Submitting...';
     const res = await insertSupabase(name, phone);
-    formMsg.textContent = res.ok ? 'Registration received. Thank you.' : res.msg;
+    formMsg.textContent = res.ok ? 'Registration received. Redirecting...' : res.msg;
     if (res.ok) await fetchCountsSupabase();
     if (res.ok) form.reset();
+    if (res.ok) setTimeout(() => {
+      window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
+    }, 1000);
     return;
   }
 
-  // fallback: local
+  // Fallback local
   const r = registerLocal(name, phone);
-  formMsg.textContent = r.ok ? 'Registration received. Thank you.' : r.msg;
-  if (r.ok) refreshUI();
-  if (r.ok) form.reset();
-});
-
-// Contact admin
-contactBtn.addEventListener('click', () => {
-  window.location.href = 'https://wa.me/254700000000';
+  formMsg.textContent = r.ok ? 'Registration received. Redirecting...' : r.msg;
+  if (r.ok) {
+    refreshUI();
+    form.reset();
+    setTimeout(() => {
+      window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
+    }, 1000);
+  }
 });
