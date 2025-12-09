@@ -6,7 +6,6 @@
   <title>𝐆𝐔𝐑𝐔 𝐕.𝐂.𝐅 3</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* === Glass + Neon Theme Styles === */
     body {
       margin: 0;
       font-family: 'Arial', sans-serif;
@@ -15,30 +14,35 @@
     }
 
     .glass-card {
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.5);
       backdrop-filter: blur(12px);
       border-radius: 20px;
       padding: 20px;
       margin: 15px;
-      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
+      transition: box-shadow 0.3s;
+    }
+
+    .glass-card:hover {
+      box-shadow: 0 0 20px #00f, 0 0 40px #ff0 inset;
     }
 
     .header-card .brand {
       font-size: 28px;
       font-weight: bold;
-      color: #00ff6a;
-      text-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa;
+      color: #00f;
+      text-shadow: 0 0 10px #00f, 0 0 20px #ff0;
     }
     .header-card .subtitle {
-      color: #ffffff;
-      text-shadow: 0 0 5px #00ff6a;
+      color: #ff0;
+      text-shadow: 0 0 5px #00f, 0 0 10px #ff0;
     }
 
     .counters-card .counter {
       margin-bottom: 15px;
     }
-    .counter .label { color: #00ff6a; font-weight: bold; }
-    .counter .num { color: #fff; font-weight: bold; }
+    .counter .label { color: #00f; font-weight: bold; }
+    .counter .num { color: #ff0; font-weight: bold; }
 
     .double-track {
       position: relative;
@@ -48,8 +52,8 @@
       border-radius: 10px;
       overflow: hidden;
     }
-    .inner-fill.reg { background: #00ff6a; height: 100%; }
-    .inner-fill.rem { background: #ffffff; height: 100%; }
+    .inner-fill.reg { background: #00f; height: 100%; transition: width 0.5s; }
+    .inner-fill.rem { background: #ff0; height: 100%; transition: width 0.5s; }
     .inner-fill.tar { background: #000; height: 100%; }
 
     .vcf-form input {
@@ -59,11 +63,12 @@
       border-radius: 15px;
       border: none;
       background: rgba(255,255,255,0.05);
-      color: #00ff6a;
+      color: #00f;
       font-weight: bold;
-      box-shadow: 0 0 5px #00ff6a inset;
+      box-shadow: 0 0 5px #00f inset, 0 0 10px #ff0 inset;
+      transition: box-shadow 0.3s;
     }
-    .vcf-form input::placeholder { color: #ffffff; }
+    .vcf-form input::placeholder { color: #ff0; }
 
     .btn {
       padding: 12px 20px;
@@ -73,40 +78,45 @@
       cursor: pointer;
       font-size: 16px;
       text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.3s;
     }
     .btn.submit {
-      background: linear-gradient(135deg, #00ff6a, #00ffaa);
+      background: linear-gradient(45deg, #00f, #ff0);
       color: #000;
-      text-shadow: 0 0 5px #000;
-      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
+      animation: alive 2s infinite alternate;
     }
     .btn.submit:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 15px #00ff6a, 0 0 25px #00ffaa inset;
+      box-shadow: 0 0 20px #00f, 0 0 30px #ff0 inset;
     }
     .btn.contact {
       background: #111;
-      color: #00ff6a;
-      text-shadow: 0 0 5px #00ff6a;
-      box-shadow: 0 0 5px #00ff6a inset;
+      color: #00f;
+      box-shadow: 0 0 5px #00f inset, 0 0 10px #ff0 inset;
     }
     .btn.contact:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 10px #00ff6a inset;
+      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
     }
     .btn.more {
-      background: linear-gradient(135deg, #00ff6a, #00ffaa, #000, #fff);
+      background: linear-gradient(45deg, #00f, #ff0, #00f);
       color: #000;
-      text-shadow: 0 0 5px #00ff6a, 0 0 10px #00ffaa;
-      box-shadow: 0 0 10px #00ff6a, 0 0 20px #00ffaa inset;
+      box-shadow: 0 0 10px #00f, 0 0 20px #ff0 inset;
+      animation: alive 2s infinite alternate;
     }
     .btn.more:hover {
       transform: scale(1.08);
-      box-shadow: 0 0 15px #00ff6a, 0 0 25px #00ffaa inset;
+      box-shadow: 0 0 20px #00f, 0 0 30px #ff0 inset;
     }
 
-    .form-msg { margin-top: 10px; color: #00ff6a; font-weight: bold; }
+    @keyframes alive {
+      0% { filter: brightness(1); }
+      50% { filter: brightness(1.4); }
+      100% { filter: brightness(1); }
+    }
+
+    .form-msg { margin-top: 10px; color: #00f; font-weight: bold; }
 
     .page-bg {
       position: fixed;
@@ -127,7 +137,6 @@
       0% { transform: translateY(0px); }
       100% { transform: translateY(20px); }
     }
-
   </style>
 </head>
 <body>
@@ -135,9 +144,9 @@
   <div class="page-bg" aria-hidden="true"></div>
 
   <div class="glow-container" aria-hidden="true">
-    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:#00ff6a;"></div>
-    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:#00ffaa;"></div>
-    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:#00ff6a;"></div>
+    <div class="glow-blob" style="--size:180px; --x:10%; --y:20%; --color:#00f;"></div>
+    <div class="glow-blob" style="--size:120px; --x:70%; --y:25%; --color:#ff0;"></div>
+    <div class="glow-blob" style="--size:150px; --x:40%; --y:70%; --color:#00f;"></div>
   </div>
 
   <header class="glass-card header-card">
@@ -181,7 +190,6 @@
         <button type="submit" id="submitBtn" class="btn submit">Submit</button>
       </div>
 
-      <!-- More button under submit -->
       <div class="more-btn-container" style="text-align:center; margin-top:15px;">
         <a href="https://gurutech-lab.netlify.app/boosting" target="_blank" class="btn more">More</a>
       </div>
@@ -194,7 +202,6 @@
     <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
   </footer>
 
-  <!-- Background music -->
   <audio id="bgMusic" loop>
     <source src="https://files.catbox.moe/ets3nu.mp3" type="audio/mpeg">
   </audio>
