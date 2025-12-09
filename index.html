@@ -1,99 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guru VCF — Tech Lab</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guru V.C.F. Wildery</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="background"></div>
+  <!-- top subtle animated background (keeps mobile perf in mind) -->
+  <div class="page-bg" aria-hidden="true"></div>
 
-<div class="container">
+  <!-- Header glass card -->
+  <header class="glass-card header-card" role="banner">
+    <div class="brand">GURU V.C.F. WILDERY</div>
+    <div class="subtitle">New Drop • Clean • Secure</div>
+  </header>
 
-    <!-- HEADER CARD -->
-    <div class="glass-card header-card">
-        <h1>Guru V.C.F. Wildery</h1>
-        <p>Your verification made easy!</p>
+  <!-- Counters glass card (double-layer bars) -->
+  <section class="glass-card counters-card" aria-label="progress counters">
+    <!-- Registered -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Registered</span>
+        <span class="num" id="regCount">0</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="regFill" class="inner-fill reg"></div>
+      </div>
     </div>
 
-    <!-- COUNTERS CARD (BAR GRAPH STYLE) -->
-    <div class="glass-card counters-card">
-        <div class="counter">
-            <span class="count-label">Registered</span>
-            <div class="bar-container">
-                <div class="bar" id="bar-registered" style="width:0%;"></div>
-            </div>
-            <span class="count-number" id="registered">0</span>
-        </div>
-        <div class="counter">
-            <span class="count-label">Remaining</span>
-            <div class="bar-container">
-                <div class="bar" id="bar-remaining" style="width:100%;"></div>
-            </div>
-            <span class="count-number" id="remaining">800</span>
-        </div>
-        <div class="counter">
-            <span class="count-label">Target</span>
-            <div class="bar-container">
-                <div class="bar" id="bar-target" style="width:100%;"></div>
-            </div>
-            <span class="count-number" id="target">800</span>
-        </div>
+    <!-- Remaining -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Remaining</span>
+        <span class="num" id="remCount">800</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="remFill" class="inner-fill rem"></div>
+      </div>
     </div>
 
-    <!-- FORM CARD -->
-    <div class="glass-card form-card">
-        <input type="text" id="name" placeholder="Enter Your Name">
-        <input type="text" id="phone" placeholder="Enter Your Phone Number">
-        <button class="action-btn" id="submit-btn">Submit</button>
+    <!-- Target -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Target</span>
+        <span class="num" id="tarCount">800</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="tarFill" class="inner-fill tar"></div>
+      </div>
     </div>
+  </section>
 
-    <!-- CONTACT BUTTONS CARD -->
-    <div class="glass-card contact-card">
-        <a href="#" class="action-btn">Contact Admin</a>
-        <a href="#" class="action-btn">WhatsApp</a>
-        <a href="#" class="action-btn">Instagram</a>
-    </div>
+  <!-- Form glass card -->
+  <main class="glass-card form-card" role="main">
+    <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
+      <label class="sr-only" for="name">Full name</label>
+      <input id="name" name="name" type="text" placeholder="Full name" required />
 
-</div>
+      <label class="sr-only" for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" placeholder="Phone (e.g. 2547...)" required />
 
-<!-- JS for counters and bar animation -->
-<script>
-    // Placeholder counts
-    let registered = 0;
-    let remaining = 800;
-    let target = 800;
+      <div class="form-actions">
+        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
+        <button type="submit" id="submitBtn" class="btn submit">Submit</button>
+      </div>
 
-    function updateCounters() {
-        document.getElementById('registered').textContent = registered;
-        document.getElementById('remaining').textContent = remaining;
-        document.getElementById('target').textContent = target;
-    }
+      <div id="formMsg" class="form-msg" aria-live="polite"></div>
+    </form>
+  </main>
 
-    function updateBarGraph() {
-        const total = 800; // target
-        document.getElementById('bar-registered').style.width = (registered/total*100) + '%';
-        document.getElementById('bar-remaining').style.width = (remaining/total*100) + '%';
-        document.getElementById('bar-target').style.width = '100%';
-    }
+  <!-- small footer -->
+  <footer class="glass-card footer-card" role="contentinfo">
+    <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
+  </footer>
 
-    updateCounters();
-    updateBarGraph();
-
-    // Example: update dynamically (simulate registration)
-    /*
-    setInterval(() => {
-        if(registered < target){
-            registered += Math.floor(Math.random()*5);
-            remaining = target - registered;
-            updateCounters();
-            updateBarGraph();
-        }
-    }, 3000);
-    */
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
