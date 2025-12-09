@@ -1,43 +1,84 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guru V.C.F Wildery</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guru V.C.F. Wildery</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="background"></div>
+  <!-- top subtle animated background (keeps mobile perf in mind) -->
+  <div class="page-bg" aria-hidden="true"></div>
 
-<div class="header-card glass">
-    <h1>GURU V.C.F. WILDERY</h1>
-</div>
+  <!-- Header glass card -->
+  <header class="glass-card header-card" role="banner">
+    <div class="brand">GURU V.C.F. WILDERY</div>
+    <div class="subtitle">New Drop • Clean • Secure</div>
+  </header>
 
-<div class="counts glass">
-    <div class="count-box registered">
-        <p>Registered</p>
-        <h2 id="registeredCount">0</h2>
+  <!-- Counters glass card (double-layer bars) -->
+  <section class="glass-card counters-card" aria-label="progress counters">
+    <!-- Registered -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Registered</span>
+        <span class="num" id="regCount">0</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="regFill" class="inner-fill reg"></div>
+      </div>
     </div>
-    <div class="count-box target">
-        <p>Target</p>
-        <h2>800</h2>
+
+    <!-- Remaining -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Remaining</span>
+        <span class="num" id="remCount">800</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="remFill" class="inner-fill rem"></div>
+      </div>
     </div>
-    <div class="count-box remaining">
-        <p>Remaining</p>
-        <h2 id="remainingCount">800</h2>
+
+    <!-- Target -->
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Target</span>
+        <span class="num" id="tarCount">800</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div id="tarFill" class="inner-fill tar"></div>
+      </div>
     </div>
-</div>
+  </section>
 
-<div class="form-card glass">
-    <input type="text" id="name" placeholder="Enter your name">
-    <input type="text" id="phone" placeholder="Enter your phone number">
-    <button class="submit-btn" onclick="registerUser()">Submit</button>
+  <!-- Form glass card -->
+  <main class="glass-card form-card" role="main">
+    <form id="vcfForm" class="vcf-form" autocomplete="off" novalidate>
+      <label class="sr-only" for="name">Full name</label>
+      <input id="name" name="name" type="text" placeholder="Full name" required />
 
-    <a href="https://wa.me/0000000000" class="contact-btn">Contact Admin</a>
-</div>
+      <label class="sr-only" for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" placeholder="Phone (e.g. 2547...)" required />
 
-<script src="script.js"></script>
+      <div class="form-actions">
+        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
+        <button type="submit" id="submitBtn" class="btn submit">Submit</button>
+      </div>
+
+      <div id="formMsg" class="form-msg" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <!-- small footer -->
+  <footer class="glass-card footer-card" role="contentinfo">
+    <small>© 2025 Guru Tech Lab — VCF Wildery (Target = 800)</small>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
