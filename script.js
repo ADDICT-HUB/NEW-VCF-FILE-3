@@ -8,8 +8,8 @@
    const SUPABASE_ANON_KEY = 'your-anon-key';
    Leave blank to use localStorage.
 */
-const SUPABASE_URL = "";      // <-- PASTE SUPABASE PROJECT URL HERE
-const SUPABASE_ANON_KEY = ""; // <-- PASTE SUPABASE ANON PUBLIC KEY HERE
+const SUPABASE_URL = "https://imgoxflvovahburtpxyb.supabase.co";      // <-- PASTE SUPABASE PROJECT URL HERE
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltZ294Zmx2b3ZhaGJ1cnRweHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1ODQ2MzUsImV4cCI6MjA4MDE2MDYzNX0.Z8JlmaTgtxoKC5Nn_DxgqA-nWMuw54tf-ALJ9PetCHI"; // <-- PASTE SUPABASE ANON PUBLIC KEY HERE
 
 // CONFIG
 const TARGET = 800;
