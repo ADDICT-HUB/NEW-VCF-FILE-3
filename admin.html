@@ -3,103 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel — VCF Entries</title>
+<title>Admin Panel</title>
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: #0a0a0a;
-    color: #fff;
-    padding: 16px;
-  }
-  h1 { text-align: center; margin-bottom: 16px; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
-  }
-  th, td {
-    padding: 8px 12px;
-    border: 1px solid #444;
-    text-align: left;
-  }
-  th { background: #111; }
-  tr:nth-child(even){ background: #1a1a1a; }
-  #loading { text-align: center; margin-top: 12px; }
-  button { padding: 8px 12px; border-radius: 6px; border:none; background:#00aaff; color:#fff; cursor:pointer; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #050507;
+  color: #fff;
+  margin:0;
+  padding:12px;
+}
+h1{ text-align:center; margin-bottom:20px; }
+#loading{ text-align:center; font-size:16px; margin-top:20px; }
+table{
+  width:100%;
+  border-collapse: collapse;
+  margin-top:20px;
+}
+table th, table td{
+  border:1px solid rgba(255,255,255,0.2);
+  padding:8px;
+  text-align:left;
+}
+table th{
+  background: rgba(0,170,255,0.2);
+}
+.debug{
+  margin-top:12px;
+  font-size:13px;
+  color: yellow;
+}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.23.0/dist/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </head>
 <body>
 
-<h1>Admin Panel — Registered Numbers</h1>
+<h1>Admin Panel</h1>
 <div id="loading">Loading...</div>
+<div class="debug" id="debug"></div>
 <table id="entriesTable" style="display:none;">
   <thead>
     <tr>
-      <th>#</th>
+      <th>ID</th>
       <th>Name</th>
       <th>Phone</th>
-      <th>Registered At</th>
+      <th>Created At</th>
     </tr>
   </thead>
-  <tbody></tbody>
+  <tbody id="entriesBody"></tbody>
 </table>
 
-<div style="text-align:center;">
-  <button id="logoutBtn">Logout</button>
-</div>
-
 <script>
-// === SUPABASE CONFIG ===
+// ===== Supabase setup =====
 const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
-const TABLE = "vcf_entries";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Initialize Supabase
-const supabase = window.Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Fetch entries
-async function fetchEntries() {
-  const loading = document.getElementById("loading");
-  const table = document.getElementById("entriesTable");
-  const tbody = table.querySelector("tbody");
-  loading.style.display = "block";
-  table.style.display = "none";
-
+// ===== Fetch entries =====
+async function loadEntries() {
+  const debugEl = document.getElementById("debug");
+  debugEl.textContent = "Fetching data from Supabase...";
   try {
-    const { data, error } = await supabase.from(TABLE).select("*").order("id", { ascending: true });
-    if (error) throw error;
-
-    tbody.innerHTML = "";
-    if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No registered entries</td></tr>`;
-    } else {
-      data.forEach((row, idx) => {
-        const created = row.created_at ? new Date(row.created_at).toLocaleString() : "";
-        tbody.innerHTML += `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>${row.name || ""}</td>
-            <td>${row.phone || ""}</td>
-            <td>${created}</td>
-          </tr>`;
-      });
+    const { data, error } = await supabase.from("vcf_entries").select("*").order("id", { ascending:true });
+    if (error) {
+      debugEl.textContent = "Error: " + error.message;
+      return;
     }
-    loading.style.display = "none";
-    table.style.display = "table";
+    if (!data || data.length === 0) {
+      debugEl.textContent = "No entries found.";
+      document.getElementById("loading").textContent = "No entries yet.";
+      return;
+    }
+
+    const tbody = document.getElementById("entriesBody");
+    tbody.innerHTML = "";
+    data.forEach(entry => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${entry.id}</td>
+                      <td>${entry.name}</td>
+                      <td>${entry.phone}</td>
+                      <td>${entry.created_at ? new Date(entry.created_at).toLocaleString() : ""}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("entriesTable").style.display = "table";
+    debugEl.textContent = "Loaded " + data.length + " entries.";
   } catch (err) {
-    loading.textContent = "Error loading entries: " + err.message;
-    console.error(err);
+    debugEl.textContent = "Exception: " + err.message;
   }
 }
 
-// Logout button
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  window.location.href = "index.html"; // go back to your main page
-});
-
-// Fetch entries on load
-fetchEntries();
+// ===== Auto refresh every 8 seconds =====
+loadEntries();
+setInterval(loadEntries, 8000);
 </script>
 
 </body>
