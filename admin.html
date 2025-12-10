@@ -5,59 +5,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VCF Admin Panel</title>
 <style>
-  body {
+  body{
     font-family: Arial, sans-serif;
-    background-color: #000;
-    color: #fff;
-    padding: 20px;
+    background-color:#000;
+    color:#fff;
+    padding:20px;
   }
-  h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #00aaff;
-    text-shadow: 0 0 8px #00aaff;
-  }
-  #status {
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: #ffe600;
-  }
-  #totalCount {
-    font-weight: bold;
-    color: #00aaff;
-  }
-  table {
-    width: 100%;
+  h1{text-align:center; margin-bottom:20px;}
+  #status{margin-bottom:10px; font-size:14px; color:yellow;}
+  table{
+    width:100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top:10px;
   }
-  th, td {
-    border: 1px solid #555;
-    padding: 8px 12px;
-    text-align: left;
+  th, td{
+    border:1px solid #555;
+    padding:8px 12px;
+    text-align:left;
   }
-  th {
-    background-color: #111;
-    color: #00aaff;
+  th{
+    background-color:#111;
   }
-  tr:nth-child(even) { background-color: #222; }
-  tr.new-entry {
+  tr:nth-child(even){background-color:#222;}
+  tr.new-entry{
     animation: glowEntry 2s ease;
   }
-  @keyframes glowEntry {
-    0% { background-color: #444; color: #00aaff; }
-    100% { background-color: #222; color: #fff; }
-  }
-  /* Scrollable table for many entries */
-  tbody {
-    display: block;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-  thead, tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
+  @keyframes glowEntry{
+    0%{background-color:#444; color:#00f;}
+    100%{background-color:#222; color:#fff;}
   }
 </style>
 </head>
@@ -99,7 +74,7 @@
       statusEl.textContent = "Loading...";
 
       const { data, error } = await supabase
-        .from('vcf_entries') // <-- Make sure this matches your table name
+        .from('vcf_entries') // make sure this matches your table
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -136,16 +111,15 @@
       statusEl.textContent = "Loaded successfully.";
     } catch (err) {
       console.error(err);
-      statusEl.textContent = "Error loading registrations. Check console.";
+      statusEl.textContent = "Error loading registrations.";
     }
   }
 
-  // Fetch initially and auto-refresh
+  // Initial fetch and auto-refresh every 10s
   window.addEventListener('DOMContentLoaded', () => {
     fetchRegistrations();
-    setInterval(fetchRegistrations, 10000); // refresh every 10 seconds
+    setInterval(fetchRegistrations, 10000);
   });
 </script>
-
 </body>
 </html>
