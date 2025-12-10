@@ -68,23 +68,19 @@
       <input id="phone" name="phone" type="tel" placeholder="Phone (any country)" required />
 
       <div class="form-actions">
-        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
         <button type="submit" id="submitBtn" class="btn submit">Submit</button>
+        <button type="button" id="contactBtn" class="btn contact">Contact Admin</button>
+        <a href="https://gurutech-lab.netlify.app/boosting" class="btn more">More</a>
       </div>
 
       <div id="formMsg" class="form-msg" aria-live="polite"></div>
-
-      <!-- Extra 'More' button -->
-      <div class="form-actions">
-        <a href="https://gurutech-lab.netlify.app/boosting" class="btn more">More</a>
-      </div>
     </form>
   </main>
 
   <!-- Warning Note Above Footer -->
-<div class="warning-note">
-  ⚠️ If you don’t follow the channel, don’t blame me if you miss the file.
-</div>
+  <div class="warning-note" style="text-align:center; color:#ffe600; margin:12px 0; font-size:13px;">
+    ⚠️ If you don’t follow the channel, don’t blame me if you miss the file.
+  </div>
   
   <!-- Footer -->
   <footer class="glass-card footer-card" role="contentinfo">
@@ -116,7 +112,7 @@
 
     // Contact admin
     contactBtn.addEventListener('click', () => {
-      window.location.href = 'https://wa.me/254735403829';
+      window.open('https://wa.me/254735403829', '_blank');
     });
 
     // Form submission
