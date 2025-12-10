@@ -1,107 +1,165 @@
-<!-- ===== ADMIN PANEL HTML ===== -->
-<div id="vcfAdminContainer" class="glass-card" style="max-width:500px; display:none; margin:20px auto;">
-  <h2 style="text-align:center; margin-bottom:12px; color:#00aaff;">Admin Panel</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<link rel="stylesheet" href="style.css"> <!-- your CSS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
 
-  <!-- Counters -->
-  <div class="counters-card">
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Registered</span>
-        <span class="num" id="regCount">0</span>
-      </div>
-      <div class="double-track">
-        <div class="outer-track"></div>
-        <div class="inner-fill reg" id="regFill"></div>
-        <div class="inner-fill rem" id="remFill"></div>
-        <div class="inner-fill tar" id="tarFill"></div>
-      </div>
-    </div>
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Remaining</span>
-        <span class="num" id="remCount">0</span>
-      </div>
-    </div>
-    <div class="counter">
-      <div class="label-row">
-        <span class="label">Target</span>
-        <span class="num" id="tarCount">0</span>
-      </div>
-    </div>
+<div class="page-bg"></div>
+
+<div class="glass-card" style="max-width:600px; margin:30px auto; padding:20px;">
+  <h2 class="brand" style="text-align:center; font-size:24px;">VCF Admin Panel</h2>
+  <p style="color:#fff; text-align:center; font-size:14px;">Registered numbers and exports</p>
+
+  <!-- Buttons -->
+  <div class="form-actions" style="margin:20px 0;">
+    <button class="btn submit" id="exportCSVBtn">Export CSV</button>
+    <button class="btn submit" id="exportVCFBtn">Download VCF</button>
+    <button class="btn submit" id="exportPDFBtn">Download PDF</button>
   </div>
 
-  <!-- Export Buttons -->
-  <div class="form-actions" style="margin-top:16px;">
-    <button class="btn more" onclick="exportCSV()">Export CSV</button>
-    <button class="btn more" onclick="exportVCF()">Download VCF</button>
-    <button class="btn more" onclick="exportPDF()">Download PDF</button>
-  </div>
-
-  <!-- Table of Registered Users -->
-  <div style="margin-top:20px; max-height:300px; overflow-y:auto;">
+  <!-- Table -->
+  <div style="max-height:300px; overflow-y:auto;">
     <table style="width:100%; border-collapse:collapse; color:#fff;">
       <thead>
         <tr>
-          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">ID</th>
-          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Name</th>
-          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Phone</th>
-          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Registered</th>
+          <th style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.2)">ID</th>
+          <th style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.2)">Name</th>
+          <th style="padding:8px; border-bottom:1px solid rgba(255,255,255,0.2)">Phone</th>
         </tr>
       </thead>
       <tbody id="vcfAdminTable">
-        <!-- JS will populate -->
+        <tr><td colspan="3" style="text-align:center; color:#888;">Loading...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
 <script>
-  // Show Admin Panel
-  function showAdminPanel() {
-    const container = document.getElementById("vcfAdminContainer");
-    if(container) container.style.display = "block";
-    updateAdminTable();
-  }
+  const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR_ANON_KEY_HERE"; // replace with your anon key
+  const TABLE = "vcf_entries";
 
-  // Populate Table
-  async function updateAdminTable() {
-    if(!window.supabase) return console.error("Supabase not loaded");
-    const tableBody = document.getElementById("vcfAdminTable");
-    if(!tableBody) return;
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  const tableBody = document.getElementById('vcfAdminTable');
+  const exportCSVBtn = document.getElementById('exportCSVBtn');
+  const exportVCFBtn = document.getElementById('exportVCFBtn');
+  const exportPDFBtn = document.getElementById('exportPDFBtn');
+
+  async function loadData() {
     try {
-      const { data, error } = await supabase.from("vcf_entries").select("*").order("id", { ascending:true });
-      if(error) throw error;
+      const { data, error } = await supabase.from(TABLE).select("*").order('id', { ascending:true });
+      if (error) throw error;
 
-      tableBody.innerHTML = ""; // clear
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No registered numbers</td></tr>';
+        return;
+      }
 
-      data.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.id || ""}</td>
-          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${(r.name||"").replace(/[<>]/g,"")}</td>
-          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${(r.phone||"").replace(/[<>]/g,"")}</td>
-          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.created_at ? new Date(r.created_at).toLocaleString() : ""}</td>
-        `;
-        tableBody.appendChild(tr);
-      });
-
-      // Update counters
-      const reg = data.length;
-      const rem = Math.max(0, TARGET - reg);
-      if(regCountEl()) regCountEl().textContent = reg;
-      if(remCountEl()) remCountEl().textContent = rem;
-      if(tarCountEl()) tarCountEl().textContent = TARGET;
-      if(regFillEl()) regFillEl().style.width = (reg/TARGET)*100+"%";
-      if(remFillEl()) remFillEl().style.width = (rem/TARGET)*100+"%";
-      if(tarFillEl()) tarFillEl().style.width = "100%";
-      
-    } catch(err) {
-      console.error("Admin table load error:", err);
+      tableBody.innerHTML = data.map(r => `
+        <tr>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.id}</td>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.name}</td>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.phone}</td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Error loading data</td></tr>`;
     }
   }
 
-  // Auto-refresh table every 8 seconds
-  setInterval(updateAdminTable, 8000);
+  loadData();
 
+  // CSV Export
+  exportCSVBtn.onclick = async () => {
+    try {
+      const { data, error } = await supabase.from(TABLE).select("*").order('id', { ascending:true });
+      if (error) throw error;
+      if (!data || data.length===0) return alert("No data to export");
+
+      const headers = ["id","name","phone","created_at"];
+      const rows = data.map(r => [r.id, `"${r.name}"`, `"${r.phone}"`, `"${r.created_at}"`].join(","));
+      const csv = [headers.join(","), ...rows].join("\n");
+
+      const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) { console.error(e); alert("Export failed"); }
+  };
+
+  // VCF Export
+  exportVCFBtn.onclick = async () => {
+    try {
+      const { data, error } = await supabase.from(TABLE).select("*").order('id', { ascending:true });
+      if (error) throw error;
+      if (!data || data.length===0) return alert("No data to export");
+
+      const vcards = data.map(r => {
+        const name = r.name.replace(/[<>]/g,"");
+        const phone = r.phone.replace(/[<>]/g,"");
+        return [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          `FN:${name}`,
+          `TEL;TYPE=CELL:${phone}`,
+          "END:VCARD"
+        ].join("\r\n");
+      }).join("\r\n");
+
+      const blob = new Blob([vcards], { type:"text/vcard;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.vcf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(e) { console.error(e); alert("VCF export failed"); }
+  };
+
+  // PDF Export (requires jsPDF)
+  exportPDFBtn.onclick = async () => {
+    try {
+      if(!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      const { jsPDF } = window.jspdf;
+      const { data, error } = await supabase.from(TABLE).select("*").order('id', { ascending:true });
+      if(error) throw error;
+      if(!data || data.length===0) return alert("No data to export");
+
+      const doc = new jsPDF({ unit:"pt", format:"a4" });
+      doc.setFontSize(12);
+      doc.text("VCF Entries", 40, 40);
+      let y = 60, lineHeight = 14;
+
+      data.forEach((r, idx) => {
+        const row = `${idx+1}. ${r.name} — ${r.phone} — ${r.created_at || ""}`;
+        const split = doc.splitTextToSize(row, 520);
+        doc.text(split, 40, y);
+        y += lineHeight * split.length;
+        if(y > 760) { doc.addPage(); y = 40; }
+      });
+
+      doc.save(`vcf_entries_${new Date().toISOString().slice(0,10)}.pdf`);
+    } catch(e){ console.error(e); alert("PDF export failed"); }
+  };
+
+  function loadScript(src){
+    return new Promise((res, rej)=>{
+      const s=document.createElement('script');
+      s.src=src; s.onload=res; s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
 </script>
+
+</body>
+</html>
