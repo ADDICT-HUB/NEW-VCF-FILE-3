@@ -3,99 +3,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>Admin Panel — VCF</title>
 <style>
 body {
   font-family: 'Poppins', sans-serif;
   background: #050507;
-  color: #fff;
-  margin:0;
-  padding:12px;
+  color: white;
+  padding: 18px;
 }
-h1{ text-align:center; margin-bottom:20px; }
-#loading{ text-align:center; font-size:16px; margin-top:20px; }
-table{
+h2 { text-align:center; margin-bottom:16px; }
+#loading { text-align:center; margin:20px 0; font-size:16px; color: #ffe600; }
+table {
   width:100%;
   border-collapse: collapse;
-  margin-top:20px;
+  margin-bottom:16px;
+  display:none;
 }
-table th, table td{
+th, td {
   border:1px solid rgba(255,255,255,0.2);
   padding:8px;
   text-align:left;
 }
-table th{
+th {
   background: rgba(0,170,255,0.2);
 }
-.debug{
-  margin-top:12px;
-  font-size:13px;
-  color: yellow;
+button {
+  padding:10px 14px;
+  border:none;
+  border-radius:6px;
+  margin-right:8px;
+  cursor:pointer;
+  font-weight:600;
 }
+button:hover { opacity:0.9; }
+.export-btn { background:#00aaff; color:white; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
 </head>
 <body>
 
-<h1>Admin Panel</h1>
+<h2>Admin Panel — VCF Entries</h2>
 <div id="loading">Loading...</div>
-<div class="debug" id="debug"></div>
-<table id="entriesTable" style="display:none;">
+
+<table id="entriesTable">
   <thead>
     <tr>
       <th>ID</th>
       <th>Name</th>
       <th>Phone</th>
-      <th>Created At</th>
+      <th>Registered At</th>
     </tr>
   </thead>
   <tbody id="entriesBody"></tbody>
 </table>
 
-<script>
-// ===== Supabase setup =====
-const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<div>
+  <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+  <button class="export-btn" onclick="exportVCF()">Download VCF</button>
+</div>
 
-// ===== Fetch entries =====
+<script>
+// Load JSON entries
 async function loadEntries() {
-  const debugEl = document.getElementById("debug");
-  debugEl.textContent = "Fetching data from Supabase...";
   try {
-    const { data, error } = await supabase.from("vcf_entries").select("*").order("id", { ascending:true });
-    if (error) {
-      debugEl.textContent = "Error: " + error.message;
-      return;
-    }
-    if (!data || data.length === 0) {
-      debugEl.textContent = "No entries found.";
-      document.getElementById("loading").textContent = "No entries yet.";
-      return;
-    }
+    const res = await fetch('entries.json'); // Make sure entries.json is in same folder
+    if (!res.ok) throw new Error("Failed to fetch JSON");
+    const data = await res.json();
 
     const tbody = document.getElementById("entriesBody");
     tbody.innerHTML = "";
+
     data.forEach(entry => {
       const tr = document.createElement("tr");
       tr.innerHTML = `<td>${entry.id}</td>
                       <td>${entry.name}</td>
                       <td>${entry.phone}</td>
-                      <td>${entry.created_at ? new Date(entry.created_at).toLocaleString() : ""}</td>`;
+                      <td>${entry.created_at || ''}</td>`;
       tbody.appendChild(tr);
     });
 
     document.getElementById("loading").style.display = "none";
     document.getElementById("entriesTable").style.display = "table";
-    debugEl.textContent = "Loaded " + data.length + " entries.";
-  } catch (err) {
-    debugEl.textContent = "Exception: " + err.message;
+  } catch(err) {
+    document.getElementById("loading").textContent = "Failed to load entries.";
+    console.error(err);
   }
 }
 
-// ===== Auto refresh every 8 seconds =====
-loadEntries();
-setInterval(loadEntries, 8000);
+// Export CSV
+function exportCSV() {
+  fetch('entries.json')
+    .then(res => res.json())
+    .then(data => {
+      if(!data.length) return alert("No data to export.");
+      const headers = ["id","name","phone","created_at"];
+      const rows = data.map(r => [
+        r.id ?? '',
+        `"${(r.name||'').replace(/"/g,'""')}"`,
+        `"${(r.phone||'').replace(/"/g,'""')}"`,
+        `"${(r.created_at||'')}"`
+      ].join(','));
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+}
+
+// Export VCF
+function exportVCF() {
+  fetch('entries.json')
+    .then(res => res.json())
+    .then(data => {
+      if(!data.length) return alert("No data to export.");
+      const vcards = data.map(r => {
+        const name = (r.name||'').replace(/[<>]/g,'');
+        const phone = (r.phone||'').replace(/[<>]/g,'');
+        return [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          `FN:${name}`,
+          `TEL;TYPE=CELL:${phone}`,
+          "END:VCARD"
+        ].join("\r\n");
+      }).join("\r\n");
+      const blob = new Blob([vcards], { type:'text/vcard;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.vcf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+}
+
+// Load entries on page load
+document.addEventListener("DOMContentLoaded", loadEntries);
 </script>
 
 </body>
