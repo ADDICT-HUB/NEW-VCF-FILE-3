@@ -1,428 +1,107 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>VCF Admin — Secure</title>
+<!-- ===== ADMIN PANEL HTML ===== -->
+<div id="vcfAdminContainer" class="glass-card" style="max-width:500px; display:none; margin:20px auto;">
+  <h2 style="text-align:center; margin-bottom:12px; color:#00aaff;">Admin Panel</h2>
 
-<style>
-  :root{--bg:#000;--panel:#0b0b0b;--muted:#777;--accent:#00ffea}
-  body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#fff;padding:20px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  h1{margin:0;text-align:left;font-size:20px}
-  #controls{display:flex;gap:8px;align-items:center}
-  button{background:#111;border:1px solid #333;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
-  button.primary{background:linear-gradient(90deg,#0066ff,#00c6ff);color:#000}
-  #status{color:var(--accent);margin-top:8px;margin-bottom:8px}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{border:1px solid #222;padding:8px 10px;text-align:left}
-  th{background:#0f0f0f}
-  tr:nth-child(even){background:#0b0b0b}
-  tr.new-entry{animation:glow 2s ease}
-  @keyframes glow{0%{background:#333;color:var(--accent)}100%{background:transparent;color:inherit}}
-  #loginModal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:999}
-  #loginBox{background:#010101;padding:20px;border-radius:10px;border:1px solid #222;width:320px}
-  .input{width:100%;padding:8px;margin:8px 0;border-radius:6px;border:1px solid #333;background:#050505;color:#fff}
-  .small{font-size:13px;color:var(--muted)}
-  #topBar{display:flex;gap:12px;align-items:center}
-  #actions{display:flex;gap:8px;align-items:center}
-</style>
-</head>
-<body>
-
-<header>
-  <div id="topBar">
-    <h1>VCF Admin Panel</h1>
-    <div class="small">Table: <strong>vcf_entries</strong></div>
+  <!-- Counters -->
+  <div class="counters-card">
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Registered</span>
+        <span class="num" id="regCount">0</span>
+      </div>
+      <div class="double-track">
+        <div class="outer-track"></div>
+        <div class="inner-fill reg" id="regFill"></div>
+        <div class="inner-fill rem" id="remFill"></div>
+        <div class="inner-fill tar" id="tarFill"></div>
+      </div>
+    </div>
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Remaining</span>
+        <span class="num" id="remCount">0</span>
+      </div>
+    </div>
+    <div class="counter">
+      <div class="label-row">
+        <span class="label">Target</span>
+        <span class="num" id="tarCount">0</span>
+      </div>
+    </div>
   </div>
 
-  <div id="controls">
-    <div id="actions" style="display:none">
-      <button id="exportCsv">Export CSV</button>
-      <button id="exportVcf">Download VCF</button>
-      <button id="exportPdf">Download PDF</button>
-      <button id="logoutBtn">Logout</button>
-    </div>
-    <div id="loginHint" class="small">Not signed in</div>
+  <!-- Export Buttons -->
+  <div class="form-actions" style="margin-top:16px;">
+    <button class="btn more" onclick="exportCSV()">Export CSV</button>
+    <button class="btn more" onclick="exportVCF()">Download VCF</button>
+    <button class="btn more" onclick="exportPDF()">Download PDF</button>
   </div>
-</header>
 
-<div id="status">Loading...</div>
-<div>Total Registered: <span id="totalCount">0</span></div>
-
-<table id="regTable" aria-live="polite">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Name</th>
-      <th>Phone</th>
-      <th>Registered At</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<!-- Login modal (shown until admin logs in) -->
-<div id="loginModal" aria-hidden="false">
-  <div id="loginBox" role="dialog" aria-modal="true" aria-label="Admin login">
-    <h2 style="margin:0 0 8px 0">Admin login</h2>
-    <div class="small">Enter admin password to see registrations and export data.</div>
-
-    <!--
-      SECURITY NOTE:
-      - This example uses a client-side hashed password for convenience.
-      - It's visible in the page source. For production, use Supabase Auth or server-side auth.
-      - To switch to Supabase Auth, see notes at the bottom of this file.
-    -->
-    <input id="adminPassword" class="input" type="password" placeholder="Admin password" />
-    <div style="display:flex;gap:8px;">
-      <button id="loginBtn" class="primary">Sign in</button>
-      <button id="demoBtn">Demo user</button>
-    </div>
-    <div class="small" style="margin-top:8px;color:var(--muted)">
-      Default demo password (for quick test): <strong>demo1234</strong>
-    </div>
-    <div id="loginMsg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+  <!-- Table of Registered Users -->
+  <div style="margin-top:20px; max-height:300px; overflow-y:auto;">
+    <table style="width:100%; border-collapse:collapse; color:#fff;">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">ID</th>
+          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Name</th>
+          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Phone</th>
+          <th style="text-align:left; padding:6px; border-bottom:1px solid rgba(255,255,255,0.2)">Registered</th>
+        </tr>
+      </thead>
+      <tbody id="vcfAdminTable">
+        <!-- JS will populate -->
+      </tbody>
+    </table>
   </div>
 </div>
 
-<!-- Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <script>
-/* ===========================
-   CONFIG - update if needed
-   =========================== */
-const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
-const TABLE_NAME = "vcf_entries";
-const REFRESH_INTERVAL_MS = 8000;
-
-/* ===========================
-   Admin password (client-side hashed)
-   - This is a convenience approach for small personal projects.
-   - For real security, enable Supabase Auth & check server-side session.
-   - The stored value is a SHA-256 hex of the chosen password.
-   =========================== */
-/* default demo pw = "demo1234" */
-const ADMIN_PASSWORD_HASH = "c2e2b6d7f5ca32b6c8c2e6c9b9a8f2c6f36f9f3ae8a5a4a9f0ef1bb1e6f8f4d2"; // replace after generating your own
-
-/* ===========================
-   Create Supabase client
-   =========================== */
-const supabase = supabase_js = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // uses global lib
-
-/* ===========================
-   DOM references
-   =========================== */
-const loginModal = document.getElementById("loginModal");
-const loginBtn = document.getElementById("loginBtn");
-const demoBtn = document.getElementById("demoBtn");
-const adminPasswordInput = document.getElementById("adminPassword");
-const loginMsg = document.getElementById("loginMsg");
-
-const statusEl = document.getElementById("status");
-const tableBody = document.querySelector("#regTable tbody");
-const totalCountEl = document.getElementById("totalCount");
-
-const actionsEl = document.querySelector("#actions");
-const loginHint = document.getElementById("loginHint");
-
-/* ===========================
-   Utility helpers
-   =========================== */
-function sanitizeText(s){
-  if (!s && s !== 0) return "";
-  return String(s).replace(/[<>]/g, "");
-}
-
-function formatDate(ts){
-  if (!ts) return "N/A";
-  try{ return new Date(ts).toLocaleString(); }catch(e){ return String(ts); }
-}
-
-/* SHA-256 helper using Web Crypto, returns hex string */
-async function sha256hex(message){
-  const enc = new TextEncoder();
-  const data = enc.encode(message);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  const bytes = new Uint8Array(hash);
-  return Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
-/* Simple client-side login check (not fully secure) */
-async function verifyAdminPassword(plain){
-  const h = await sha256hex(plain);
-  return h === ADMIN_PASSWORD_HASH;
-}
-
-/* Toggle UI after login state */
-function onLoginSuccess(){
-  loginModal.style.display = "none";
-  actionsEl.style.display = "flex";
-  loginHint.textContent = "Signed in as admin";
-  fetchAndRender(); // initial load
-  // start periodic refresh
-  if (!window.vcfRefreshTimer) {
-    window.vcfRefreshTimer = setInterval(fetchAndRender, REFRESH_INTERVAL_MS);
+  // Show Admin Panel
+  function showAdminPanel() {
+    const container = document.getElementById("vcfAdminContainer");
+    if(container) container.style.display = "block";
+    updateAdminTable();
   }
-}
 
-/* Logout */
-function logout(){
-  loginModal.style.display = "flex";
-  actionsEl.style.display = "none";
-  loginHint.textContent = "Not signed in";
-  tableBody.innerHTML = "";
-  totalCountEl.textContent = "0";
-  statusEl.textContent = "Signed out";
-  if (window.vcfRefreshTimer){ clearInterval(window.vcfRefreshTimer); window.vcfRefreshTimer = null; }
-}
+  // Populate Table
+  async function updateAdminTable() {
+    if(!window.supabase) return console.error("Supabase not loaded");
+    const tableBody = document.getElementById("vcfAdminTable");
+    if(!tableBody) return;
 
-/* ===========================
-   Fetch & render table
-   =========================== */
-let previousIds = [];
+    try {
+      const { data, error } = await supabase.from("vcf_entries").select("*").order("id", { ascending:true });
+      if(error) throw error;
 
-async function fetchAndRender(){
-  statusEl.textContent = "Loading...";
-  try {
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .select("*")
-      .order("created_at", { ascending: false });
+      tableBody.innerHTML = ""; // clear
 
-    if (error) throw error;
+      data.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.id || ""}</td>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${(r.name||"").replace(/[<>]/g,"")}</td>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${(r.phone||"").replace(/[<>]/g,"")}</td>
+          <td style="padding:6px; border-bottom:1px solid rgba(255,255,255,0.1)">${r.created_at ? new Date(r.created_at).toLocaleString() : ""}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
 
-    tableBody.innerHTML = "";
-
-    if (!data || data.length === 0){
-      statusEl.textContent = "No registrations yet.";
-      totalCountEl.textContent = "0";
-      previousIds = [];
-      return;
+      // Update counters
+      const reg = data.length;
+      const rem = Math.max(0, TARGET - reg);
+      if(regCountEl()) regCountEl().textContent = reg;
+      if(remCountEl()) remCountEl().textContent = rem;
+      if(tarCountEl()) tarCountEl().textContent = TARGET;
+      if(regFillEl()) regFillEl().style.width = (reg/TARGET)*100+"%";
+      if(remFillEl()) remFillEl().style.width = (rem/TARGET)*100+"%";
+      if(tarFillEl()) tarFillEl().style.width = "100%";
+      
+    } catch(err) {
+      console.error("Admin table load error:", err);
     }
-
-    data.forEach((row, idx)=>{
-      const tr = document.createElement("tr");
-      if (!previousIds.includes(row.id)) tr.classList.add("new-entry");
-
-      const name = sanitizeText(row.name);
-      const phone = sanitizeText(row.phone);
-      const created = formatDate(row.created_at);
-
-      tr.innerHTML = `
-        <td>${idx+1}</td>
-        <td>${name}</td>
-        <td>${phone}</td>
-        <td>${created}</td>
-      `;
-      tableBody.appendChild(tr);
-    });
-
-    previousIds = data.map(d=>d.id);
-    totalCountEl.textContent = String(data.length);
-    statusEl.textContent = "Loaded successfully.";
-
-  } catch (err) {
-    console.error("Fetch error", err);
-    statusEl.textContent = "Error loading registrations.";
   }
-}
 
-/* ===========================
-   Export helpers
-   =========================== */
+  // Auto-refresh table every 8 seconds
+  setInterval(updateAdminTable, 8000);
 
-/* Export CSV */
-async function exportCSV(){
-  statusEl.textContent = "Preparing CSV...";
-  try {
-    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("id",{ascending:true});
-    if (error) throw error;
-    if (!data || data.length === 0){ statusEl.textContent = "No data to export."; return; }
-
-    // header
-    const headers = ["id","name","phone","created_at"];
-    const rows = data.map(r => [
-      r.id ?? "",
-      `"${(r.name||"").replace(/"/g,'""')}"`,
-      `"${(r.phone||"").replace(/"/g,'""')}"`,
-      `"${(r.created_at||"").replace(/"/g,'""')}"`
-    ].join(","));
-
-    const csv = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    statusEl.textContent = "CSV ready.";
-  } catch (e){
-    console.error(e);
-    statusEl.textContent = "CSV export failed.";
-  }
-}
-
-/* Export VCF (multiple vCards concatenated) */
-async function exportVCF(){
-  statusEl.textContent = "Preparing VCF...";
-  try {
-    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("id",{ascending:true});
-    if (error) throw error;
-    if (!data || data.length === 0){ statusEl.textContent = "No data to export."; return; }
-
-    // Create vCard entries — keeping it simple, vCard 3.0 minimal fields
-    const vcards = data.map(r => {
-      const name = sanitizeText(r.name || "");
-      const phone = sanitizeText(r.phone || "");
-      // strip emojis from name for vCard safety (simple replace)
-      const plainName = name.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,"");
-      return [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        `FN:${plainName}`,
-        `TEL;TYPE=CELL:${phone}`,
-        "END:VCARD"
-      ].join("\r\n");
-    }).join("\r\n");
-
-    const blob = new Blob([vcards], { type: "text/vcard;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.vcf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    statusEl.textContent = "VCF ready.";
-  } catch (e){
-    console.error(e);
-    statusEl.textContent = "VCF export failed.";
-  }
-}
-
-/* Export PDF (simple table to PDF using jsPDF) */
-async function exportPDF(){
-  statusEl.textContent = "Preparing PDF...";
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("id",{ascending:true});
-    if (error) throw error;
-    if (!data || data.length === 0){ statusEl.textContent = "No data to export."; return; }
-
-    doc.setFontSize(12);
-    doc.text("VCF Entries", 14, 20);
-    let y = 30;
-    const lineHeight = 8;
-    doc.setFontSize(10);
-
-    // add rows — simple layout, not a large table engine
-    data.forEach((r, idx) => {
-      const id = String(r.id || "");
-      const name = sanitizeText(r.name || "");
-      const phone = sanitizeText(r.phone || "");
-      const created = formatDate(r.created_at || "");
-      const rowText = `${idx+1}. ${name} — ${phone} — ${created}`;
-      const split = doc.splitTextToSize(rowText, 180);
-      doc.text(split, 14, y);
-      y += lineHeight * split.length;
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-    });
-
-    const filename = `vcf_entries_${new Date().toISOString().slice(0,10)}.pdf`;
-    doc.save(filename);
-    statusEl.textContent = "PDF saved.";
-  } catch (e){
-    console.error(e);
-    statusEl.textContent = "PDF export failed.";
-  }
-}
-
-/* ===========================
-   Event handlers
-   =========================== */
-loginBtn.addEventListener("click", async ()=>{
-  loginMsg.textContent = "Checking...";
-  const pw = adminPasswordInput.value || "";
-  try{
-    // if ADMIN_PASSWORD_HASH is still demo value, allow demo path for convenience
-    if (pw === "demo1234") {
-      // NOTE: demo login — not secure. In production, set ADMIN_PASSWORD_HASH and use that.
-      loginMsg.textContent = "Demo login accepted.";
-      setTimeout(onLoginSuccess, 300);
-      return;
-    }
-
-    const ok = await verifyAdminPassword(pw);
-    if (ok){
-      loginMsg.textContent = "Welcome.";
-      setTimeout(onLoginSuccess, 250);
-    } else {
-      loginMsg.textContent = "Invalid password.";
-    }
-  } catch (e){
-    console.error(e);
-    loginMsg.textContent = "Login error.";
-  }
-});
-
-// demo quick login
-demoBtn.addEventListener("click", ()=>{
-  adminPasswordInput.value = "demo1234";
-  loginBtn.click();
-});
-
-document.getElementById("logoutBtn").addEventListener("click", logout);
-document.getElementById("exportCsv").addEventListener("click", exportCSV);
-document.getElementById("exportVcf").addEventListener("click", exportVCF);
-document.getElementById("exportPdf").addEventListener("click", exportPDF);
-
-/* Initialize UI: hide actions until signed in */
-actionsEl.style.display = "none";
-statusEl.textContent = "Please sign in to view registrations.";
-
-/* Allow pressing Enter to submit login */
-adminPasswordInput.addEventListener("keyup", (e)=>{ if (e.key === "Enter") loginBtn.click(); });
-
-/* ===========================
-   NOTES & Next steps (secure admin)
-   ===========================
-1) Client-side password is convenient but not secure:
-   - Anyone can view the page source and find the hash or code paths.
-   - For production, enable Supabase Auth (Email/password) and create an admin user.
-   - Then replace the login flow with:
-       const { data, error } = await supabase.auth.signInWithPassword({email, password});
-     and check session before loading data.
-
-2) To set up Supabase Auth admin:
-   - In Supabase Dashboard -> Authentication -> Settings, enable email sign-ups (or invite-only)
-   - Create the admin account (signup) using the Admin email
-   - Use supabase.auth.signInWithPassword() and check the returned session.token server-side or in client.
-
-3) If you want a server-only secret check (recommended), implement a tiny server endpoint that:
-   - accepts admin password (POST over HTTPS)
-   - validates (server-side) against env var
-   - returns a short-lived token or session cookie
-   - the admin panel uses that token to request data from Supabase via a RLS policy for authenticated admin role.
-
-If you want, I can:
-- Convert this login to Supabase Auth code and give step-by-step setup (recommended), OR
-- Create a tiny serverless endpoint (Vercel / Supabase Functions) that validates admin password securely.
-
-Just tell me which option you want and I’ll produce the exact steps + code.
-*/
 </script>
-</body>
-</html>
