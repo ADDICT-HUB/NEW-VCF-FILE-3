@@ -95,20 +95,26 @@ body{
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.35);
 }
 .inner-fill{
-  position:absolute; left:0; top:0; bottom:0;
+  position:absolute; top:0; bottom:0;
   width:0%;
   border-radius:12px;
   transition: width 0.7s cubic-bezier(.2,.9,.2,1);
   box-shadow: 0 4px 14px rgba(0,0,0,0.25) inset, 0 6px 18px rgba(0,0,0,0.25);
 }
+/* Registered bar — grows from left */
 .inner-fill.reg{ 
+  left:0;
   background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white)); 
 }
+/* Remaining bar — shrinks from right */
 .inner-fill.rem{ 
-  background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(0,0,0,0.5)); 
   right:0; left:auto; /* fix remaining bar from collapsing */
+  background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(0,0,0,0.5)); 
 }
+/* Target bar — always full */
 .inner-fill.tar{ 
+  left:0;
+  width:100%;
   background: linear-gradient(90deg, var(--blue), #003366, var(--yellow)); 
 }
 
