@@ -227,3 +227,53 @@ body{
   50%{ transform: translate(20px,-30px) scale(1.1); }
   100%{ transform: translate(-20px,20px) scale(0.9); }
 }
+
+/* ===== Warning Note Above Footer ===== */
+.warning-note{
+  width: 100%;
+  max-width: 460px;
+  margin: 25px auto 10px auto;
+  padding: 14px 20px;
+  border-radius: 14px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 15px;
+
+  /* Colors match your theme */
+  color: var(--yellow);
+  background: rgba(0,0,0,0.6);
+
+  /* Glass + Glow */
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  /* Glow effect */
+  box-shadow:
+    0 0 10px rgba(255, 230, 0, 0.55),
+    0 0 22px rgba(0, 170, 255, 0.35);
+
+  animation: warningPulse 2.3s ease-in-out infinite;
+}
+
+/* Glow-animation */
+@keyframes warningPulse {
+  0% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 6px rgba(255, 230, 0, 0.4),
+      0 0 12px rgba(0, 170, 255, 0.25);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 20px rgba(255, 230, 0, 1),
+      0 0 40px rgba(0, 170, 255, 0.45);
+  }
+  100% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 6px rgba(255, 230, 0, 0.4),
+      0 0 12px rgba(0, 170, 255, 0.25);
+  }
+}
