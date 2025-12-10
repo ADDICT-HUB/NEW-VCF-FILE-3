@@ -127,6 +127,7 @@ body{
 
 /* ===== Buttons ===== */
 .form-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
 .btn{
   flex:1;
   padding:14px;
@@ -137,39 +138,57 @@ body{
   font-size:15px;
   text-align:center;
   transition: transform 0.2s, box-shadow 0.3s;
+  color: var(--white);
 }
+
+/* CONTACT BUTTON */
 .btn.contact{
   background: linear-gradient(90deg, var(--black), var(--blue));
-  color: var(--white);
-  box-shadow: 0 0 8px var(--blue) inset, 0 0 12px var(--yellow) inset;
+  box-shadow: 
+      0 0 10px rgba(0,170,255,0.5),
+      0 0 18px rgba(0,170,255,0.4);
 }
+.btn.contact:hover{
+  transform: scale(1.05);
+  box-shadow: 
+      0 0 20px rgba(0,170,255,0.8),
+      0 0 35px rgba(0,170,255,0.6);
+}
+
+/* SUBMIT BUTTON — ONLY BLACK & BLUE GLOW */
 .btn.submit{
-  background: linear-gradient(270deg, var(--black), var(--blue), var(--yellow), var(--white));
-  background-size: 600% 600%;
-  color: var(--white);
-  box-shadow: 0 6px 20px rgba(0,170,255,0.2);
-  animation: liveGradient 5s ease infinite;
+  background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
+  background-size: 300% 300%;
+  animation: bluePulse 4s ease infinite;
+  box-shadow: 
+      0 0 12px rgba(0,170,255,0.5),
+      0 0 22px rgba(0,170,255,0.45);
 }
 .btn.submit:hover{
-  transform: scale(1.05);
-  box-shadow: 0 0 20px var(--blue), 0 0 25px var(--yellow);
+  transform: scale(1.06);
+  box-shadow: 
+      0 0 26px rgba(0,170,255,0.9),
+      0 0 45px rgba(0,170,255,0.7);
 }
 
-/* More button */
+/* MORE BUTTON — ONLY BLACK & BLUE GLOW */
 .btn.more{
-  background: linear-gradient(270deg,var(--black), var(--blue), var(--yellow), var(--white));
-  background-size: 600% 600%;
-  color: var(--white);
-  box-shadow: 0 6px 20px rgba(0,170,255,0.2);
-  animation: liveGradient 5s ease infinite;
+  background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
+  background-size: 300% 300%;
+  animation: bluePulse 4s ease infinite;
+  box-shadow:
+      0 0 12px rgba(0,170,255,0.55),
+      0 0 22px rgba(0,170,255,0.45);
 }
 .btn.more:hover{
-  transform: scale(1.08);
-  box-shadow: 0 0 20px var(--blue), 0 0 30px var(--yellow);
+  transform: scale(1.07);
+  box-shadow:
+      0 0 26px rgba(0,170,255,1),
+      0 0 45px rgba(0,170,255,0.85);
 }
 
-/* ===== Gradient Animation ===== */
-@keyframes liveGradient{
+/* Blue breathing animation */
+@keyframes bluePulse{
   0%{ background-position: 0% 50%; }
   50%{ background-position: 100% 50%; }
   100%{ background-position: 0% 50%; }
