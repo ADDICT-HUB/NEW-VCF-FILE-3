@@ -93,12 +93,15 @@
     Your browser does not support the audio element.
   </audio>
 
-  <!-- Script -->
+  <!-- Supabase UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+
+  <!-- Main script -->
   <script src="script.js"></script>
+
+  <!-- Extra page JS (music & contact) -->
   <script>
     const music = document.getElementById('bgMusic');
-    const form = document.getElementById('vcfForm');
-    const formMsg = document.getElementById('formMsg');
     const contactBtn = document.getElementById('contactBtn');
 
     // Play music on first interaction
@@ -114,41 +117,7 @@
     contactBtn.addEventListener('click', () => {
       window.open('https://wa.me/254735403829', '_blank');
     });
-
-    // FORM SUBMISSION - FIXED
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      formMsg.textContent = '';
-
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-
-      if (!name || !phone) {
-        formMsg.textContent = 'Please fill name and phone.';
-        return;
-      }
-
-      formMsg.textContent = 'Submitting...';
-
-      // use your NEW script.js function
-      const res = await registerUser(name, phone);
-
-      if (!res.ok) {
-        formMsg.textContent = res.msg;
-        return;
-      }
-
-      formMsg.textContent = 'Registered!';
-      form.reset();
-
-      // refresh counters
-      updateCounters();
-
-      // redirect
-      setTimeout(() => {
-        window.location.href = 'https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f';
-      }, 800);
-    });
   </script>
+
 </body>
 </html>
