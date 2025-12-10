@@ -1,15 +1,13 @@
 /* ===============================
   SECURE + FEATURED script.js
-  - Fixes counters & bars sync
   - Registration (sanitized + rate-limit)
-  - Client-side admin login (Ctrl+Shift+A)
-  - Export CSV / VCF / PDF (admin only)
+  - Counters & progress bars
+  - Auto-download buttons when TARGET reached
   - Uses your Supabase anon key only (safe)
 ================================= */
 
 const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
 
 const TARGET = 800;
 const TABLE = "vcf_entries";
@@ -83,6 +81,10 @@ async function updateCounters() {
       remFillEl().style.left = (100 - remPercent) + "%"; // shrink from right
     }
     if (tarFillEl()) tarFillEl().style.width = "100%";
+
+    // ✅ Show download buttons if target reached
+    if (reg >= TARGET) showDownloadButtons();
+
   } catch (err) {
     console.error("updateCounters EX:", err);
   }
@@ -107,22 +109,12 @@ async function registerUser(nameRaw, phoneRaw) {
     name = "🥇 " + name;
 
     // Check duplicate phone
-    const { data: dupPhone, error: dupPhoneErr } = await supabase
+    const { data: dupPhone } = await supabase
       .from(TABLE)
       .select("id")
       .eq("phone", phone)
       .limit(1);
-    if (dupPhoneErr) throw dupPhoneErr;
     if (dupPhone?.length) return { ok: false, msg: "Phone already registered." };
-
-    // Check duplicate name
-    const { data: dupName, error: dupNameErr } = await supabase
-      .from(TABLE)
-      .select("id")
-      .eq("name", name)
-      .limit(1);
-    if (dupNameErr) throw dupNameErr;
-    if (dupName?.length) return { ok: false, msg: "Name already registered." };
 
     // Insert record
     const { error: insertErr } = await supabase.from(TABLE).insert([{ name, phone }]);
@@ -174,98 +166,97 @@ if (form) {
 }
 
 /* ============================
-   ADMIN LOGIN & EXPORT
+   AUTO DOWNLOAD BUTTONS
 ============================ */
-const ADMIN_PASSWORD_HASH = "c2e2b6d7f5ca32b6c8c2e6c9b9a8f2c6f36f9f3ae8a5a4a9f0ef1bb1e6f8f4d2"; // placeholder
-let adminLoggedIn = false;
-let adminControlsEl = null;
-
-async function sha256hex(msg) {
-  const enc = new TextEncoder();
-  const data = enc.encode(msg);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  const bytes = new Uint8Array(hash);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-function createAdminModal() {
-  if (document.getElementById("vcfAdminModal")) return;
-  const modal = document.createElement("div");
-  modal.id = "vcfAdminModal";
-  modal.style = "position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999";
-
-  const box = document.createElement("div");
-  box.style = "background:#000; border:1px solid #222; padding:18px; border-radius:8px; width:320px; color:#fff";
-  box.innerHTML = `
-    <h3 style="margin:0 0 8px 0">Admin Login</h3>
-    <div style="font-size:13px;color:#ccc;margin-bottom:8px">Enter admin password</div>
-    <input id="vcfAdminPassword" type="password" style="width:100%;padding:8px;border-radius:6px;border:1px solid #333;background:#050505;color:#fff" />
-    <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
-      <button id="vcfAdminCancel" style="padding:8px 10px;border-radius:6px;border:1px solid #333;background:#111;color:#fff">Cancel</button>
-      <button id="vcfAdminOk" style="padding:8px 10px;border-radius:6px;border:1px solid #0ab;background:#022;color:#0ff">Sign in</button>
-    </div>
-    <div id="vcfAdminMsg" style="margin-top:8px;font-size:13px;color:#ffea00"></div>
-  `;
-  modal.appendChild(box);
-  document.body.appendChild(modal);
-
-  document.getElementById("vcfAdminCancel").onclick = () => { modal.remove(); };
-  document.getElementById("vcfAdminOk").onclick = async () => {
-    const pw = document.getElementById("vcfAdminPassword").value || "";
-    const msgEl = document.getElementById("vcfAdminMsg");
-    msgEl.textContent = "Checking...";
-    if (pw === "demo1234") {
-      msgEl.textContent = "Demo login accepted.";
-      setTimeout(() => { modal.remove(); onAdminSuccess(); }, 300);
-      return;
-    }
-    const h = await sha256hex(pw);
-    if (h === ADMIN_PASSWORD_HASH) {
-      msgEl.textContent = "Welcome.";
-      setTimeout(() => { modal.remove(); onAdminSuccess(); }, 250);
-    } else {
-      msgEl.textContent = "Invalid password.";
-    }
-  };
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
-    if (!adminLoggedIn) createAdminModal();
-  }
-});
-
-function onAdminSuccess() {
-  if (adminLoggedIn) return;
-  adminLoggedIn = true;
+function showDownloadButtons() {
+  if (document.getElementById("downloadSection")) return; // avoid duplicates
 
   const wrap = document.createElement("div");
-  wrap.id = "vcfAdminControls";
-  wrap.style = "position:fixed; bottom:18px; right:18px; z-index:9998; display:flex; gap:8px";
+  wrap.id = "downloadSection";
+  wrap.style.display = "flex";
+  wrap.style.justifyContent = "center";
+  wrap.style.gap = "12px";
+  wrap.style.marginTop = "16px";
 
-  const createButton = (text, onClick, bg="#111") => {
+  const createBtn = (text, onClick) => {
     const btn = document.createElement("button");
     btn.innerText = text;
-    btn.style = `padding:8px 10px; border-radius:8px; border:1px solid #333; background:${bg}; color:#fff`;
+    btn.className = "btn more";
     btn.onclick = onClick;
     return btn;
   };
 
-  wrap.appendChild(createButton("Export CSV", exportCSV));
-  wrap.appendChild(createButton("Download VCF", exportVCF));
-  wrap.appendChild(createButton("Download PDF", exportPDF));
-  wrap.appendChild(createButton("Logout", () => { adminLoggedIn=false; wrap.remove(); }, "#440"));
+  wrap.appendChild(createBtn("Download CSV", exportCSV));
+  wrap.appendChild(createBtn("Download VCF", exportVCF));
+  wrap.appendChild(createBtn("Download PDF", exportPDF));
 
-  document.body.appendChild(wrap);
-  adminControlsEl = wrap;
-  alert("Admin signed in — export controls available at bottom-right.");
+  const container = document.querySelector(".form-card") || document.body;
+  container.appendChild(wrap);
 }
 
 /* ============================
    EXPORT FUNCTIONS
 ============================ */
-async function exportCSV() { /* same as your original */ }
-async function exportVCF() { /* same as your original */ }
-async function exportPDF() { /* same as your original */ }
+async function exportCSV() {
+  try {
+    const { data, error } = await supabase.from(TABLE).select("*").order("id", { ascending: true });
+    if (error) throw error;
+    if (!data || !data.length) return alert("No data to export.");
 
+    const csvContent = data.map(r => `"${r.name}","${r.phone}"`).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `entries_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("CSV export failed:", err);
+    alert("Failed to download CSV.");
+  }
+}
+
+async function exportVCF() {
+  try {
+    const { data, error } = await supabase.from(TABLE).select("*").order("id", { ascending: true });
+    if (error) throw error;
+    if (!data || !data.length) return alert("No data to export.");
+
+    const vcards = data.map(r => {
+      const name = (r.name || "").replace(/[<>]/g,"");
+      const phone = (r.phone || "").replace(/[<>]/g,"");
+      return [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:${name}`,
+        `TEL;TYPE=CELL:${phone}`,
+        "END:VCARD"
+      ].join("\r\n");
+    }).join("\r\n");
+
+    const blob = new Blob([vcards], { type: "text/vcard;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.vcf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("VCF export failed:", err);
+    alert("Failed to download VCF.");
+  }
+}
+
+async function exportPDF() {
+  alert("PDF export is not implemented yet."); // optional
+}
+
+/* ============================
+   INITIALIZE
+============================ */
 document.addEventListener("DOMContentLoaded", updateCounters);
