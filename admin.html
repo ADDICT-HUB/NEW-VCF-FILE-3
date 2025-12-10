@@ -2,165 +2,124 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VCF Wildery Admin</title>
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VCF Admin Panel</title>
 <style>
-body {
-    font-family: "Poppins", sans-serif;
-    background: radial-gradient(circle at top, #1c0000, #300000 80%);
-    color: white;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-h1 { color: maroon; text-shadow: 0 0 10px #800000; }
-
-.glass-card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 20px;
-    margin: 15px 0;
-    width: 95%;
-    max-width: 700px;
-    box-shadow: 0 0 20px rgba(128,0,0,0.5);
-}
-
-table {
-    width: 100%;
+  body{
+    font-family: Arial, sans-serif;
+    background-color:#000;
+    color:#fff;
+    padding:20px;
+  }
+  h1{text-align:center; margin-bottom:20px;}
+  #status{margin-bottom:10px; font-size:14px; color:yellow;}
+  table{
+    width:100%;
     border-collapse: collapse;
-    margin-top: 15px;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-th { color: gold; }
-
-button {
-    padding: 6px 12px;
-    margin: 2px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: linear-gradient(90deg, #800000, #ff0000);
-    color: white;
-    font-weight: bold;
-}
-button:hover { opacity: 0.85; }
-
-.edit-btn { background: #ff8c00; }
-.delete-btn { background: #d50000; }
-.download-btn { background: #00c853; margin:5px 5px 15px 0; }
-
-input.edit-input {
-    width: 90%;
-    padding: 4px;
-    border-radius: 6px;
-    border: none;
-}
-
-/* password modal */
-#passwordModal {
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: rgba(0,0,0,0.85);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:1000;
-}
-
-#passwordModal .modal-content {
-    background: rgba(255,255,255,0.05);
-    padding: 25px;
-    border-radius: 18px;
-    backdrop-filter: blur(10px);
-    text-align: center;
-}
-
-#passwordModal input {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    margin-right: 10px;
-    width: 200px;
-}
-
-#passwordModal button {
-    padding: 10px 15px;
-}
+    margin-top:10px;
+  }
+  th, td{
+    border:1px solid #555;
+    padding:8px 12px;
+    text-align:left;
+  }
+  th{
+    background-color:#111;
+  }
+  tr:nth-child(even){background-color:#222;}
+  tr.new-entry{
+    animation: glowEntry 2s ease;
+  }
+  @keyframes glowEntry{
+    0%{background-color:#444; color:#00f;}
+    100%{background-color:#222; color:#fff;}
+  }
 </style>
 </head>
 <body>
 
-<div id="passwordModal">
-    <div class="modal-content">
-        <h2>Enter Admin Password</h2>
-        <input type="password" id="adminPass" placeholder="Password">
-        <button id="checkPassBtn">Enter</button>
-        <p id="passMsg" style="color:red;"></p>
-    </div>
-</div>
+<h1>VCF Admin Panel</h1>
+<div id="status">Loading...</div>
+<div>Total Registered: <span id="totalCount">0</span></div>
 
-<h1>VCF Wildery Admin Panel</h1>
+<table id="regTable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Phone 🪾</th>
+      <th>Registered At</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Entries will populate here -->
+  </tbody>
+</table>
 
-<div id="adminContent" style="display:none;">
-    <div class="glass-card">
-        <h2>Summary</h2>
-        <p>Total Registered: <span id="regCount">0</span></p>
-        <p>Target: <span id="targetCount">800</span></p>
-        <button id="resetBtn">Reset All Entries</button>
-        <button id="downloadPDF" class="download-btn">Download PDF</button>
-        <button id="downloadVCF" class="download-btn">Download VCF</button>
-    </div>
-
-    <div class="glass-card">
-        <h2>Registered Users</h2>
-        <table>
-            <thead>
-                <tr><th>Name</th><th>Phone</th><th>Date</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="entriesTable">
-                <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script src="script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 <script>
-const ADMIN_PASSWORD = "@akidah..";
+  // --- Supabase config ---
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('checkPassBtn').onclick = () => {
-    const val = document.getElementById('adminPass').value;
-    if(val === ADMIN_PASSWORD){
-        document.getElementById('passwordModal').style.display='none';
-        document.getElementById('adminContent').style.display='block';
-        startAdminPanel();
-    } else {
-        document.getElementById('passMsg').textContent = 'Incorrect password!';
+  const statusEl = document.getElementById('status');
+  const tableBody = document.querySelector('#regTable tbody');
+  const totalCountEl = document.getElementById('totalCount');
+
+  let previousIds = [];
+
+  async function fetchRegistrations() {
+    try {
+      statusEl.textContent = "Loading...";
+
+      const { data, error } = await supabase
+        .from('vcf_entries')  // replace with your table name
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      tableBody.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        statusEl.textContent = "No registrations yet.";
+        totalCountEl.textContent = 0;
+        previousIds = [];
+        return;
+      }
+
+      data.forEach((item, index) => {
+        const tr = document.createElement('tr');
+
+        // Highlight new entries
+        if (!previousIds.includes(item.id)) {
+          tr.classList.add('new-entry');
+        }
+
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.name}</td>
+          <td>${item.phone} 🪾</td>
+          <td>${new Date(item.created_at).toLocaleString()}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      previousIds = data.map(d => d.id);
+      totalCountEl.textContent = data.length;
+      statusEl.textContent = "Loaded successfully.";
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "Error loading registrations.";
     }
-};
+  }
 
-function startAdminPanel(){
-    async function refreshAdminData(){
-        await loadAdminData(); // call the previous loadAdminData from your script
-    }
-
-    // auto-refresh every 5 seconds
-    setInterval(refreshAdminData, 5000);
-}
+  // Fetch initially and auto-refresh
+  window.addEventListener('DOMContentLoaded', () => {
+    fetchRegistrations();
+    setInterval(fetchRegistrations, 10000); // refresh every 10 seconds
+  });
 </script>
 </body>
 </html>
