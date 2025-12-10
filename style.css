@@ -101,9 +101,16 @@ body{
   transition: width 0.7s cubic-bezier(.2,.9,.2,1);
   box-shadow: 0 4px 14px rgba(0,0,0,0.25) inset, 0 6px 18px rgba(0,0,0,0.25);
 }
-.inner-fill.reg{ background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white)); }
-.inner-fill.rem{ background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(0,0,0,0.5)); }
-.inner-fill.tar{ background: linear-gradient(90deg, var(--blue), #003366, var(--yellow)); }
+.inner-fill.reg{ 
+  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white)); 
+}
+.inner-fill.rem{ 
+  background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(0,0,0,0.5)); 
+  right:0; left:auto; /* fix remaining bar from collapsing */
+}
+.inner-fill.tar{ 
+  background: linear-gradient(90deg, var(--blue), #003366, var(--yellow)); 
+}
 
 /* ===== Form Card ===== */
 .form-card{ padding:16px; }
@@ -257,25 +264,16 @@ body{
   text-align: center;
   font-weight: 800;
   font-size: 15px;
-
-  /* Colors match your theme */
   color: var(--yellow);
   background: rgba(0,0,0,0.6);
-
-  /* Glass + Glow */
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.08);
-
-  /* Glow effect */
   box-shadow:
     0 0 10px rgba(255, 230, 0, 0.55),
     0 0 22px rgba(0, 170, 255, 0.35);
-
   animation: warningPulse 2.3s ease-in-out infinite;
 }
-
-/* Glow-animation */
 @keyframes warningPulse {
   0% {
     opacity: 0.7;
