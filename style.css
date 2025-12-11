@@ -102,20 +102,24 @@ body{
   box-shadow: 0 4px 14px rgba(0,0,0,0.25) inset, 0 6px 18px rgba(0,0,0,0.25);
 }
 /* Registered bar — grows from left */
-.inner-fill.reg{ 
-  left:0;
-  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white)); 
+.inner-fill.reg { 
+  left: 0;
+  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white));
 }
-/* Remaining bar — shrinks from right */
-.inner-fill.rem{ 
-  right:0; left:auto; /* fix remaining bar from collapsing */
-  background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(0,0,0,0.5)); 
+
+/* Remaining bar — shrinks from right but SAME COLORS */
+.inner-fill.rem { 
+  right: 0;
+  left: auto;
+  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white));
+  opacity: 0.5;  /* optional: to make it look slightly dimmer */
 }
-/* Target bar — always full */
-.inner-fill.tar{ 
-  left:0;
-  width:100%;
-  background: linear-gradient(90deg, var(--blue), #003366, var(--yellow)); 
+
+/* Target bar — full bar */
+.inner-fill.tar { 
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, var(--blue), #003366, var(--yellow));
 }
 
 /* ===== Form Card ===== */
