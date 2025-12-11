@@ -5,8 +5,36 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Guru V.C.F. 3</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ===== Smoke particles background ===== */
+    .smoke-container {
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      z-index:-1;
+      overflow:hidden;
+      pointer-events:none;
+    }
+    .smoke {
+      position:absolute;
+      width: 10px; height: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      animation: floatSmoke linear infinite;
+      filter: blur(4px);
+      transform-origin: center;
+    }
+    @keyframes floatSmoke {
+      0% { transform: translateY(100vh) rotate(0deg) scale(0.5); opacity:0.05; }
+      50% { opacity:0.15; }
+      100% { transform: translateY(-20vh) rotate(360deg) scale(1); opacity:0; }
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Smoky animated background -->
+  <div class="smoke-container" id="smokeContainer"></div>
 
   <!-- Top subtle animated background -->
   <div class="page-bg" aria-hidden="true"></div>
@@ -93,30 +121,63 @@
     Your browser does not support the audio element.
   </audio>
 
+  <!-- Enable Music Button -->
+  <button id="startAudio" style="
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    padding:10px 16px;
+    background:#000;
+    color:#fff;
+    border:2px solid #0af;
+    border-radius:8px;
+    z-index:9999;
+    font-size:14px;
+    animation:pulse 1.4s infinite;
+  ">Tap to Enable Sound 🎵</button>
+  <style>
+    @keyframes pulse {
+      0% { transform:scale(1); opacity:0.8; }
+      50% { transform:scale(1.1); opacity:1; }
+      100% { transform:scale(1); opacity:0.8; }
+    }
+  </style>
+
   <!-- Supabase UMD -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
 
   <!-- Main script -->
   <script src="script.js"></script>
 
-  <!-- Extra page JS (music & contact button) -->
+  <!-- Extra page JS -->
   <script>
     const music = document.getElementById('bgMusic');
+    const startBtn = document.getElementById('startAudio');
     const contactBtn = document.getElementById('contactBtn');
 
-    // Play music on first interaction
-    function startMusic() {
-      music.play().catch(err => console.log('Autoplay blocked:', err));
-      document.body.removeEventListener('touchstart', startMusic);
-      document.body.removeEventListener('click', startMusic);
-    }
-    document.body.addEventListener('touchstart', startMusic, { once:true });
-    document.body.addEventListener('click', startMusic, { once:true });
+    // Play music after tapping button
+    startBtn.addEventListener('click', () => {
+      music.play().then(() => { startBtn.style.display='none'; }).catch(err => console.log(err));
+    });
 
     // Contact admin
     contactBtn.addEventListener('click', () => {
       window.open('https://wa.me/254735403829', '_blank');
     });
+
+    // Smoke generation with rotation and varying speed
+    const smokeContainer = document.getElementById('smokeContainer');
+    for(let i=0;i<80;i++){
+      const s = document.createElement('div');
+      s.className='smoke';
+      s.style.left = Math.random()*100 + '%';
+      const size = 5 + Math.random()*20;
+      s.style.width = s.style.height = size + 'px';
+      s.style.animationDuration = (10 + Math.random()*25) + 's';
+      s.style.opacity = Math.random()*0.3 + 0.05;
+      s.style.transform = `rotate(${Math.random()*360}deg)`;
+      smokeContainer.appendChild(s);
+    }
   </script>
 
 </body>
