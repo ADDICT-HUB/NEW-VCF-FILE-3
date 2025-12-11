@@ -160,7 +160,7 @@ if (form) {
     updateCounters();
 
     setTimeout(() => {
-      window.location.href = "https://chat.whatsapp.com/LXpX6VjCsg2K785LP1Nngs?mode=wwt";
+      window.location.href = "https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f";
     }, 1200);
   });
 }
