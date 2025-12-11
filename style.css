@@ -90,32 +90,27 @@ body{
 .outer-track {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.18); /* clean light background */
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25); /* very visible edge */
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 .inner-fill{
   position:absolute; top:0; bottom:0;
   width:0%;
   border-radius:12px;
   transition: width 0.7s cubic-bezier(.2,.9,.2,1);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25) inset, 0 6px 18px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25) inset;
 }
-/* Registered bar — grows from left */
 .inner-fill.reg { 
   left: 0;
   background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white));
 }
-
-/* Remaining bar — shrinks from right but SAME COLORS */
 .inner-fill.rem { 
   right: 0;
   left: auto;
   background: linear-gradient(90deg, var(--blue), var(--yellow), var(--white));
-  opacity: 0.5;  /* optional: to make it look slightly dimmer */
+  opacity: 0.5;
 }
-
-/* Target bar — full bar */
 .inner-fill.tar { 
   left: 0;
   width: 100%;
@@ -134,15 +129,17 @@ body{
   color: var(--white);
   font-size:15px;
   outline:none;
-  box-shadow: 0 0 12px rgba(0,170,255,0.1) inset;
+  backdrop-filter: blur(6px);
 }
 .vcf-form input::placeholder{ color: rgba(255,255,255,0.6); }
 .vcf-form input:focus{
-  box-shadow: 0 6px 18px rgba(0,170,255,0.2) inset;
   border-color: rgba(0,170,255,0.4);
 }
 
-/* ===== Buttons ===== */
+/* ===========================
+   CLEAN BUTTONS (No Glow)
+   With Black Shadow + Blur
+=========================== */
 .form-actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
 .btn{
@@ -154,61 +151,30 @@ body{
   cursor:pointer;
   font-size:15px;
   text-align:center;
-  transition: transform 0.2s, box-shadow 0.3s;
   color: var(--white);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+  transition: transform 0.2s;
+}
+
+.btn:hover{
+  transform: scale(1.05);
 }
 
 /* CONTACT BUTTON */
 .btn.contact{
   background: linear-gradient(90deg, var(--black), var(--blue));
-  box-shadow: 
-      0 0 10px rgba(0,170,255,0.5),
-      0 0 18px rgba(0,170,255,0.4);
-}
-.btn.contact:hover{
-  transform: scale(1.05);
-  box-shadow: 
-      0 0 20px rgba(0,170,255,0.8),
-      0 0 35px rgba(0,170,255,0.6);
 }
 
-/* SUBMIT BUTTON — ONLY BLACK & BLUE GLOW */
+/* SUBMIT BUTTON */
 .btn.submit{
   background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
-  background-size: 300% 300%;
-  animation: bluePulse 4s ease infinite;
-  box-shadow: 
-      0 0 12px rgba(0,170,255,0.5),
-      0 0 22px rgba(0,170,255,0.45);
-}
-.btn.submit:hover{
-  transform: scale(1.06);
-  box-shadow: 
-      0 0 26px rgba(0,170,255,0.9),
-      0 0 45px rgba(0,170,255,0.7);
 }
 
-/* MORE BUTTON — ONLY BLACK & BLUE GLOW */
+/* MORE BUTTON */
 .btn.more{
   background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
-  background-size: 300% 300%;
-  animation: bluePulse 4s ease infinite;
-  box-shadow:
-      0 0 12px rgba(0,170,255,0.55),
-      0 0 22px rgba(0,170,255,0.45);
-}
-.btn.more:hover{
-  transform: scale(1.07);
-  box-shadow:
-      0 0 26px rgba(0,170,255,1),
-      0 0 45px rgba(0,170,255,0.85);
-}
-
-/* Blue breathing animation */
-@keyframes bluePulse{
-  0%{ background-position: 0% 50%; }
-  50%{ background-position: 100% 50%; }
-  100%{ background-position: 0% 50%; }
 }
 
 /* ===== Message Area ===== */
@@ -264,7 +230,7 @@ body{
   100%{ transform: translate(-20px,20px) scale(0.9); }
 }
 
-/* ===== Warning Note Above Footer ===== */
+/* ===== Warning Note ===== */
 .warning-note{
   width: 100%;
   max-width: 460px;
@@ -279,28 +245,4 @@ body{
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    0 0 10px rgba(255, 230, 0, 0.55),
-    0 0 22px rgba(0, 170, 255, 0.35);
-  animation: warningPulse 2.3s ease-in-out infinite;
-}
-@keyframes warningPulse {
-  0% {
-    opacity: 0.7;
-    box-shadow:
-      0 0 6px rgba(255, 230, 0, 0.4),
-      0 0 12px rgba(0, 170, 255, 0.25);
-  }
-  50% {
-    opacity: 1;
-    box-shadow:
-      0 0 20px rgba(255, 230, 0, 1),
-      0 0 40px rgba(0, 170, 255, 0.45);
-  }
-  100% {
-    opacity: 0.7;
-    box-shadow:
-      0 0 6px rgba(255, 230, 0, 0.4),
-      0 0 12px rgba(0, 170, 255, 0.25);
-  }
 }
