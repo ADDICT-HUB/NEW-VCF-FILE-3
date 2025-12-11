@@ -18,7 +18,6 @@ body{
   background: linear-gradient(160deg, #000000, #0a0a0a 60%, #000a0f);
   color: var(--white);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   padding: 18px 12px;
   overflow-x: hidden;
@@ -26,13 +25,39 @@ body{
 
 /* ===== Subtle Animated Background ===== */
 .page-bg{
-  position:fixed; inset:0; z-index:-2;
+  position:fixed; inset:0; z-index:-3;
   background:
     radial-gradient(circle at 10% 15%, rgba(0,170,255,0.05), transparent 8%),
     radial-gradient(circle at 90% 85%, rgba(255,230,0,0.04), transparent 10%),
     linear-gradient(140deg, rgba(0,0,0,0.2), rgba(0,0,0,0.4));
   filter: blur(2px);
-  transform: translateZ(0);
+}
+
+/* ===========================
+   FLOATING STARS / SNOW LAYER
+=========================== */
+.stars-bg{
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.star{
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  filter: blur(1px);
+  opacity: var(--opacity);
+  animation: floatStar linear infinite;
+}
+
+@keyframes floatStar {
+  from { transform: translateY(0); }
+  to   { transform: translateY(120vh); }
 }
 
 /* ===== Generic Glass Card ===== */
@@ -44,7 +69,6 @@ body{
   border-radius: var(--card-radius);
   background: var(--glass);
   backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid rgba(255,255,255,0.06);
   box-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 0 30px rgba(0,170,255,0.12);
   transition: box-shadow 0.3s, transform 0.3s;
@@ -136,12 +160,8 @@ body{
   border-color: rgba(0,170,255,0.4);
 }
 
-/* ===========================
-   CLEAN BUTTONS (No Glow)
-   With Black Shadow + Blur
-=========================== */
+/* Buttons */
 .form-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-
 .btn{
   flex:1;
   padding:14px;
@@ -157,36 +177,12 @@ body{
   box-shadow: 0 4px 12px rgba(0,0,0,0.7);
   transition: transform 0.2s;
 }
+.btn:hover{ transform: scale(1.05); }
+.btn.contact{ background: linear-gradient(90deg, var(--black), var(--blue)); }
+.btn.submit{ background: linear-gradient(90deg, var(--black), var(--blue), var(--black)); }
+.btn.more{ background: linear-gradient(90deg, var(--black), var(--blue), var(--black)); }
 
-.btn:hover{
-  transform: scale(1.05);
-}
-
-/* CONTACT BUTTON */
-.btn.contact{
-  background: linear-gradient(90deg, var(--black), var(--blue));
-}
-
-/* SUBMIT BUTTON */
-.btn.submit{
-  background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
-}
-
-/* MORE BUTTON */
-.btn.more{
-  background: linear-gradient(90deg, var(--black), var(--blue), var(--black));
-}
-
-/* ===== Message Area ===== */
-.form-msg{
-  min-height:18px;
-  text-align:center;
-  font-size:13px;
-  color: var(--accent);
-  margin-top:6px;
-}
-
-/* ===== Footer ===== */
+/* Footer */
 .footer-card{
   text-align:center;
   font-size:12px;
@@ -194,7 +190,7 @@ body{
   padding:10px;
 }
 
-/* ===== Mobile Adjustments ===== */
+/* Mobile */
 @media(max-width:520px){
   body{ padding:12px; }
   .counters-card{ gap:8px; padding:10px; }
@@ -205,11 +201,12 @@ body{
   .btn{ padding:14px; }
 }
 
-/* ===== 3D GLOWING BLOBS ===== */
+/* ===== Glowing Blobs ===== */
 .glow-container{
   position: fixed; top:0; left:0;
   width:100%; height:100%;
-  pointer-events: none; z-index:0; overflow:hidden;
+  pointer-events: none; z-index:-1;
+  overflow:hidden;
 }
 .glow-blob{
   position:absolute;
@@ -230,7 +227,7 @@ body{
   100%{ transform: translate(-20px,20px) scale(0.9); }
 }
 
-/* ===== Warning Note ===== */
+/* Warning Note */
 .warning-note{
   width: 100%;
   max-width: 460px;
@@ -243,6 +240,5 @@ body{
   color: var(--yellow);
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255,255,255,0.08);
 }
