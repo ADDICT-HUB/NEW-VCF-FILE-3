@@ -1,150 +1,123 @@
 /* ===============================
-  SECURE + FEATURED script.js
-  - Registration (sanitized + rate-limit)
-  - Counters & progress bars
-  - Auto-download buttons when TARGET reached
-  - Uses your Supabase anon key only (safe)
+  OFFICIAL GURU GAINS – FINAL script.js
+  Supabase-powered registration system
 ================================= */
 
 const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
 
-const TARGET = 800;
 const TABLE = "vcf_entries";
+const TARGET = 1000;
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
-/* -------------------------
-  DOM elements
-------------------------- */
+/* ===============================
+   DOM ELEMENTS
+================================ */
 const form = document.getElementById("vcfForm");
 const formMsg = document.getElementById("formMsg");
-const regCountEl = () => document.getElementById("regCount");
-const remCountEl = () => document.getElementById("remCount");
-const tarCountEl = () => document.getElementById("tarCount");
-const regFillEl = () => document.getElementById("regFill");
-const remFillEl = () => document.getElementById("remFill");
-const tarFillEl = () => document.getElementById("tarFill");
 
-/* ============================
-   Sanitization & Validation
-============================ */
-function cleanText(input) {
-  return String(input || "").replace(/[<>$%{}]/g, "").trim();
+const regCount = document.getElementById("regCount");
+const remCount = document.getElementById("remCount");
+const tarCount = document.getElementById("tarCount");
+
+/* ===============================
+   HELPERS
+================================ */
+function cleanText(v) {
+  return String(v || "").replace(/[<>$%{}]/g, "").trim();
+}
+
+function normalizePhone(phone) {
+  return String(phone || "").replace(/\D+/g, "");
 }
 
 function isValidPhone(phone) {
-  const cleaned = String(phone || "").replace(/\D+/g, "");
-  return cleaned.length >= 7 && cleaned.length <= 15;
+  return phone.length >= 7 && phone.length <= 15;
 }
 
-/* ============================
-   Rate limiting (client-side)
-============================ */
-let lastSubmit = 0;
-function isRateLimited() {
-  const now = Date.now();
-  if (now - lastSubmit < 3500) return true;
-  lastSubmit = now;
-  return false;
-}
-
-/* ============================
-   COUNTERS: fetch & update
-============================ */
+/* ===============================
+   COUNTERS (IMPORTANT FIX)
+================================ */
 async function updateCounters() {
   try {
-    const { count, error } = await supabase
+    // DO NOT use head:true (causes silent failure with RLS)
+    const { data, error } = await supabase
       .from(TABLE)
-      .select("*", { count: "exact", head: true });
+      .select("id");
 
     if (error) {
-      console.error("updateCounters error:", error);
+      console.error("Counter error:", error.message);
       return;
     }
 
-    const reg = count || 0;
-    const rem = Math.max(0, TARGET - reg);
+    const registered = data.length;
+    const remaining = Math.max(0, TARGET - registered);
 
-    // Update numbers
-    if (regCountEl()) regCountEl().textContent = reg;
-    if (remCountEl()) remCountEl().textContent = rem;
-    if (tarCountEl()) tarCountEl().textContent = TARGET;
-
-    // Update bars
-    const regPercent = (reg / TARGET) * 100;
-    const remPercent = (rem / TARGET) * 100;
-
-    if (regFillEl()) regFillEl().style.width = regPercent + "%";
-    if (remFillEl()) {
-      remFillEl().style.width = remPercent + "%";
-      remFillEl().style.left = (100 - remPercent) + "%"; // shrink from right
-    }
-    if (tarFillEl()) tarFillEl().style.width = "100%";
-
-    // ✅ Show download buttons if target reached
-    if (reg >= TARGET) showDownloadButtons();
-
+    regCount.textContent = registered;
+    remCount.textContent = remaining;
+    tarCount.textContent = TARGET;
   } catch (err) {
-    console.error("updateCounters EX:", err);
+    console.error("Counter exception:", err);
   }
 }
 
-// auto-refresh counters every 8s
-setInterval(updateCounters, 8000);
-
-/* ============================
+/* ===============================
    REGISTRATION
-============================ */
+================================ */
 async function registerUser(nameRaw, phoneRaw) {
+  const name = cleanText(nameRaw);
+  const phone = normalizePhone(phoneRaw);
+
+  if (!name || !phone) {
+    return { ok: false, msg: "Fill all fields." };
+  }
+
+  if (!isValidPhone(phone)) {
+    return { ok: false, msg: "Invalid phone number." };
+  }
+
   try {
-    if (isRateLimited()) return { ok: false, msg: "⏳ Too fast — try again." };
-
-    let name = cleanText(nameRaw);
-    let phone = cleanText(phoneRaw);
-
-    if (!name || !phone) return { ok: false, msg: "Please fill name and phone." };
-    if (!isValidPhone(phone)) return { ok: false, msg: "Invalid phone number." };
-
-    name = "🥇 " + name;
-
     // Check duplicate phone
-    const { data: dupPhone } = await supabase
+    const { data: dup, error: dupErr } = await supabase
       .from(TABLE)
       .select("id")
       .eq("phone", phone)
       .limit(1);
-    if (dupPhone?.length) return { ok: false, msg: "Phone already registered." };
 
-    // Insert record
-    const { error: insertErr } = await supabase.from(TABLE).insert([{ name, phone }]);
-    if (insertErr) throw insertErr;
+    if (dupErr) throw dupErr;
+    if (dup.length > 0) {
+      return { ok: false, msg: "This number is already registered." };
+    }
 
-    updateCounters();
+    // Insert
+    const { error: insErr } = await supabase
+      .from(TABLE)
+      .insert([{ name, phone }]);
+
+    if (insErr) throw insErr;
 
     return { ok: true };
   } catch (err) {
-    console.error("registerUser error:", err);
-    return { ok: false, msg: err.message || "Registration failed." };
+    console.error("Register error:", err.message);
+    return { ok: false, msg: "Registration failed." };
   }
 }
 
-/* -------------------------
-   FORM SUBMISSION
-------------------------- */
+/* ===============================
+   FORM SUBMIT
+================================ */
 if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!formMsg) return;
     formMsg.textContent = "";
 
-    const name = document.getElementById("name")?.value || "";
-    const phone = document.getElementById("phone")?.value || "";
-
-    if (!name || !phone) {
-      formMsg.textContent = "Please fill name and phone.";
-      return;
-    }
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
 
     formMsg.textContent = "Submitting...";
 
@@ -155,108 +128,22 @@ if (form) {
       return;
     }
 
-    formMsg.textContent = "✅ Registered! Redirecting to WhatsApp...";
+    formMsg.textContent = "✅ You are registered!";
     form.reset();
-    updateCounters();
+
+    await updateCounters();
 
     setTimeout(() => {
-      window.location.href = "https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f";
+      window.location.href =
+        "https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f";
     }, 1200);
   });
 }
 
-/* ============================
-   AUTO DOWNLOAD BUTTONS
-============================ */
-function showDownloadButtons() {
-  if (document.getElementById("downloadSection")) return; // avoid duplicates
-
-  const wrap = document.createElement("div");
-  wrap.id = "downloadSection";
-  wrap.style.display = "flex";
-  wrap.style.justifyContent = "center";
-  wrap.style.gap = "12px";
-  wrap.style.marginTop = "16px";
-
-  const createBtn = (text, onClick) => {
-    const btn = document.createElement("button");
-    btn.innerText = text;
-    btn.className = "btn more";
-    btn.onclick = onClick;
-    return btn;
-  };
-
-  wrap.appendChild(createBtn("Download CSV", exportCSV));
-  wrap.appendChild(createBtn("Download VCF", exportVCF));
-  wrap.appendChild(createBtn("Download PDF", exportPDF));
-
-  const container = document.querySelector(".form-card") || document.body;
-  container.appendChild(wrap);
-}
-
-/* ============================
-   EXPORT FUNCTIONS
-============================ */
-async function exportCSV() {
-  try {
-    const { data, error } = await supabase.from(TABLE).select("*").order("id", { ascending: true });
-    if (error) throw error;
-    if (!data || !data.length) return alert("No data to export.");
-
-    const csvContent = data.map(r => `"${r.name}","${r.phone}"`).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `entries_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("CSV export failed:", err);
-    alert("Failed to download CSV.");
-  }
-}
-
-async function exportVCF() {
-  try {
-    const { data, error } = await supabase.from(TABLE).select("*").order("id", { ascending: true });
-    if (error) throw error;
-    if (!data || !data.length) return alert("No data to export.");
-
-    const vcards = data.map(r => {
-      const name = (r.name || "").replace(/[<>]/g,"");
-      const phone = (r.phone || "").replace(/[<>]/g,"");
-      return [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        `FN:${name}`,
-        `TEL;TYPE=CELL:${phone}`,
-        "END:VCARD"
-      ].join("\r\n");
-    }).join("\r\n");
-
-    const blob = new Blob([vcards], { type: "text/vcard;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vcf_entries_${new Date().toISOString().slice(0,10)}.vcf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("VCF export failed:", err);
-    alert("Failed to download VCF.");
-  }
-}
-
-async function exportPDF() {
-  alert("PDF export is not implemented yet."); // optional
-}
-
-/* ============================
-   INITIALIZE
-============================ */
-document.addEventListener("DOMContentLoaded", updateCounters);
+/* ===============================
+   INIT
+================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  updateCounters();
+  setInterval(updateCounters, 8000);
+});
