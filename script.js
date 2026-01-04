@@ -1,13 +1,12 @@
 /* ===============================
-  ENHANCED GURU GAINS – script.js
-  Supabase-powered registration system with VCF generation
+  GURU V.C.F. 3 - FIXED WORKING SCRIPT
 ================================= */
 
 const SUPABASE_URL = "https://hkxmgufbjqmncwbydtht.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreG1ndWZianFtbmN3YnlkdGh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNjg0NDMsImV4cCI6MjA4MDg0NDQ0M30.1yaFlEJqGVg48R57IliLVnkNAiYAFIBmZEdzJX9NRfY";
 
 const TABLE = "vcf_entries";
-const TARGET = 1000;
+const TARGET = 800; // Changed to 800 as per your site
 const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029VbBNUAFFXUuUmJdrkj1f";
 
 // Initialize Supabase
@@ -21,381 +20,353 @@ const formMsg = document.getElementById("formMsg");
 const regCount = document.getElementById("regCount");
 const remCount = document.getElementById("remCount");
 const tarCount = document.getElementById("tarCount");
-const progressBar = document.getElementById("progressBar");
 
 /* ===============================
-   ENHANCED HELPER FUNCTIONS
+   HELPER FUNCTIONS - SIMPLIFIED
 ================================ */
-function cleanText(v) {
-  return String(v || "").replace(/[<>$%{}]/g, "").trim();
+function showMessage(type, text, duration = 5000) {
+    if (formMsg) {
+        formMsg.textContent = text;
+        formMsg.className = `form-msg form-${type}`;
+        formMsg.style.display = 'block';
+        
+        console.log(`[${type.toUpperCase()}] ${text}`);
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                formMsg.style.display = 'none';
+            }, duration);
+        }
+    }
+}
+
+function cleanText(text) {
+    return String(text || "").trim().slice(0, 100); // Limit length
 }
 
 function normalizePhone(phone) {
-  return String(phone || "").replace(/\D+/g, "");
+    return String(phone || "").replace(/\D+/g, "");
 }
 
 function isValidPhone(phone) {
-  const cleaned = normalizePhone(phone);
-  
-  // Basic length check
-  if (cleaned.length < 7 || cleaned.length > 15) {
-    return false;
-  }
-  
-  // Enhanced validation - detect fake numbers
-  const patterns = [
-    /^(\d)\1+$/, // All same digits (1111111, 2222222, etc.)
-    /^1234567890$/, // Sequential ascending
-    /^0987654321$/, // Sequential descending
-    /^(\d{2,})\1+$/, // Repeated pattern (121212, 123123)
-  ];
-  
-  // Check if phone matches any fake pattern
-  const isFake = patterns.some(pattern => pattern.test(cleaned));
-  
-  return !isFake;
-}
-
-function formatPhoneDisplay(phone) {
-  const cleaned = normalizePhone(phone);
-  if (cleaned.length === 10) {
-    return `(${cleaned.substring(0,3)}) ${cleaned.substring(3,6)}-${cleaned.substring(6)}`;
-  }
-  return cleaned;
+    const cleaned = normalizePhone(phone);
+    return cleaned.length >= 7 && cleaned.length <= 15;
 }
 
 /* ===============================
-   ENHANCED COUNTERS WITH PROGRESS
+   COUNTERS - SIMPLIFIED & FIXED
 ================================ */
 async function updateCounters() {
-  try {
-    const { data, error, count } = await supabase
-      .from(TABLE)
-      .select("id", { count: 'exact', head: false });
-
-    if (error) {
-      console.error("Counter error:", error.message);
-      return;
+    try {
+        console.log("🔄 Fetching counter from Supabase...");
+        
+        // SIMPLE COUNT QUERY
+        const { count, error } = await supabase
+            .from(TABLE)
+            .select('*', { count: 'exact', head: false });
+        
+        if (error) {
+            console.error("❌ Counter error:", error);
+            showMessage('error', 'Cannot load count. Please refresh.', 3000);
+            return;
+        }
+        
+        const registered = count || 0;
+        const remaining = Math.max(0, TARGET - registered);
+        
+        console.log(`✅ Found ${registered} registrations`);
+        
+        // Update display
+        regCount.textContent = registered;
+        remCount.textContent = remaining;
+        tarCount.textContent = TARGET;
+        
+        // Update progress bars if they exist
+        const regFill = document.getElementById("regFill");
+        const remFill = document.getElementById("remFill");
+        
+        if (regFill && remFill) {
+            const regPercent = (registered / TARGET) * 100;
+            const remPercent = (remaining / TARGET) * 100;
+            
+            regFill.style.width = `${regPercent}%`;
+            remFill.style.width = `${remPercent}%`;
+        }
+        
+        return registered;
+        
+    } catch (err) {
+        console.error("❌ Counter exception:", err);
+        showMessage('error', 'Failed to load counter.', 3000);
     }
-
-    const registered = count || 0;
-    const remaining = Math.max(0, TARGET - registered);
-    const progress = Math.min(100, (registered / TARGET) * 100);
-
-    // Update display
-    regCount.textContent = registered.toLocaleString();
-    remCount.textContent = remaining.toLocaleString();
-    tarCount.textContent = TARGET.toLocaleString();
-    
-    // Update progress bar if exists
-    if (progressBar) {
-      progressBar.style.width = `${progress}%`;
-      progressBar.textContent = `${Math.round(progress)}%`;
-    }
-    
-    // Update page title with count
-    document.title = `(${registered}/${TARGET}) VCF Registration`;
-    
-    return registered;
-  } catch (err) {
-    console.error("Counter exception:", err);
-  }
 }
 
 /* ===============================
-   ENHANCED REGISTRATION
+   REGISTRATION - SIMPLIFIED
 ================================ */
 async function registerUser(nameRaw, phoneRaw) {
-  const name = cleanText(nameRaw);
-  const phone = normalizePhone(phoneRaw);
-
-  // Validation
-  if (!name || !phone) {
-    return { ok: false, msg: "Please fill in both name and phone number." };
-  }
-
-  if (!isValidPhone(phone)) {
-    return { ok: false, msg: "Invalid phone number detected. Please use a real number." };
-  }
-
-  // Name validation
-  if (name.length < 2 || name.length > 50) {
-    return { ok: false, msg: "Name must be between 2 and 50 characters." };
-  }
-
-  // Check for suspicious names
-  const suspiciousNames = ['test', 'demo', 'example', 'user', 'admin', 'fake'];
-  const lowerName = name.toLowerCase();
-  if (suspiciousNames.some(s => lowerName.includes(s))) {
-    return { ok: false, msg: "Please use a real name." };
-  }
-
-  try {
-    // Enhanced duplicate check
-    const { data: existing, error: checkError } = await supabase
-      .from(TABLE)
-      .select("name, phone, created_at")
-      .or(`phone.eq.${phone},name.ilike.%${name}%`)
-      .limit(2);
-
-    if (checkError) throw checkError;
-
-    if (existing && existing.length > 0) {
-      // Check exact phone match
-      const exactPhoneMatch = existing.find(entry => entry.phone === phone);
-      if (exactPhoneMatch) {
-        return { 
-          ok: false, 
-          msg: `This number is already registered by ${exactPhoneMatch.name}.` 
-        };
-      }
-      
-      // Check similar name
-      const similarName = existing.find(entry => 
-        entry.name.toLowerCase().includes(lowerName) || 
-        lowerName.includes(entry.name.toLowerCase())
-      );
-      if (similarName) {
-        return { 
-          ok: false, 
-          msg: `Similar name "${similarName.name}" already registered.` 
-        };
-      }
+    const name = cleanText(nameRaw);
+    const phone = normalizePhone(phoneRaw);
+    
+    // Basic validation
+    if (!name || name.length < 2) {
+        return { ok: false, msg: "Please enter a valid name (min 2 characters)." };
     }
-
-    // Insert with additional data
-    const userData = {
-      name,
-      phone,
-      formatted_phone: formatPhoneDisplay(phone),
-      ip_address: await getUserIP(), // Optional
-      user_agent: navigator.userAgent,
-      created_at: new Date().toISOString()
-    };
-
-    const { error: insertError, data: insertedData } = await supabase
-      .from(TABLE)
-      .insert([userData])
-      .select();
-
-    if (insertError) throw insertError;
-
-    // Generate VCF for the user
-    generateVCF(name, phone);
-
-    return { 
-      ok: true, 
-      data: insertedData?.[0],
-      msg: "Registration successful!" 
-    };
-
-  } catch (err) {
-    console.error("Registration error:", err);
-    return { 
-      ok: false, 
-      msg: "Registration failed. Please try again later." 
-    };
-  }
+    
+    if (!phone || !isValidPhone(phone)) {
+        return { ok: false, msg: "Please enter a valid phone number (7-15 digits)." };
+    }
+    
+    try {
+        console.log("🔍 Checking for duplicate phone...");
+        
+        // Check duplicate phone (SIMPLIFIED QUERY)
+        const { data: existing, error: dupError } = await supabase
+            .from(TABLE)
+            .select('phone')
+            .eq('phone', phone)
+            .limit(1);
+        
+        if (dupError) {
+            console.error("❌ Duplicate check error:", dupError);
+            throw dupError;
+        }
+        
+        if (existing && existing.length > 0) {
+            return { ok: false, msg: "This phone number is already registered." };
+        }
+        
+        console.log("📝 Inserting new registration...");
+        
+        // SIMPLE INSERT
+        const { error: insertError } = await supabase
+            .from(TABLE)
+            .insert([{ 
+                name: name, 
+                phone: phone,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (insertError) {
+            console.error("❌ Insert error:", insertError);
+            
+            // Check for specific errors
+            if (insertError.message.includes('row-level security')) {
+                return { ok: false, msg: "Database permissions issue. Please contact admin." };
+            }
+            
+            throw insertError;
+        }
+        
+        console.log("✅ Registration successful!");
+        
+        // Generate simple VCF
+        generateSimpleVCF(name, phone);
+        
+        return { ok: true, msg: "Registration successful!" };
+        
+    } catch (err) {
+        console.error("❌ Registration error:", err);
+        return { ok: false, msg: "Registration failed. Please try again." };
+    }
 }
 
 /* ===============================
-   VCF GENERATION FUNCTION
+   SIMPLE VCF GENERATION
 ================================ */
-function generateVCF(name, phone) {
-  const vcfContent = `BEGIN:VCARD
+function generateSimpleVCF(name, phone) {
+    try {
+        const vcfContent = `BEGIN:VCARD
 VERSION:3.0
 FN:${name}
-N:${name.split(' ').reverse().join(';')};;;
-TEL;TYPE=CELL,VOICE:${phone}
-ORG:Guru Gains;
-TITLE:Registered Member;
-NOTE:Registered via Guru Gains VCF System
-REV:${new Date().toISOString()}
+TEL:${phone}
 END:VCARD`;
-
-  // Create download link
-  const blob = new Blob([vcfContent], { type: 'text/vcard' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${name.replace(/\s+/g, '_')}_gurugains.vcf`;
-  link.style.display = 'none';
-  
-  // Trigger download
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+        
+        // Create download
+        const blob = new Blob([vcfContent], { type: 'text/vcard' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name.replace(/\s+/g, '_')}.vcf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log("📄 VCF downloaded");
+    } catch (err) {
+        console.error("❌ VCF generation error:", err);
+    }
 }
 
 /* ===============================
-   GET USER IP (OPTIONAL)
-================================ */
-async function getUserIP() {
-  try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    return data.ip;
-  } catch (error) {
-    return 'unknown';
-  }
-}
-
-/* ===============================
-   ENHANCED FORM SUBMIT
+   FORM SUBMIT - FIXED
 ================================ */
 if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    // Reset message
-    formMsg.textContent = "";
-    formMsg.className = "message";
-    
-    // Get values
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    
-    // Show loading state
-    formMsg.textContent = "⏳ Processing your registration...";
-    formMsg.className = "message loading";
-    
-    // Disable form during processing
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.textContent = "Processing...";
-    submitBtn.disabled = true;
-    
-    // Register user
-    const res = await registerUser(name, phone);
-    
-    if (!res.ok) {
-      // Show error
-      formMsg.textContent = `❌ ${res.msg}`;
-      formMsg.className = "message error";
-      
-      // Re-enable form
-      submitBtn.textContent = originalBtnText;
-      submitBtn.disabled = false;
-      return;
-    }
-    
-    // Success
-    formMsg.textContent = "✅ Registration successful! Downloading VCF...";
-    formMsg.className = "message success";
-    
-    // Update counters
-    await updateCounters();
-    
-    // Clear form
-    form.reset();
-    
-    // Re-enable button briefly before redirect
-    submitBtn.textContent = "✅ Success!";
-    submitBtn.disabled = false;
-    
-    // Countdown before WhatsApp redirect
-    let countdown = 3;
-    const countdownInterval = setInterval(() => {
-      formMsg.textContent = `✅ Registration complete! Redirecting to WhatsApp in ${countdown}...`;
-      countdown--;
-      
-      if (countdown < 0) {
-        clearInterval(countdownInterval);
-        // Redirect to WhatsApp
-        window.location.href = WHATSAPP_CHANNEL;
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        console.log("🚀 Form submitted");
         
-        // Fallback: Open in new tab if redirect fails
+        // Reset message
+        formMsg.textContent = "";
+        formMsg.className = "form-msg";
+        
+        // Get values
+        const name = document.getElementById("name").value;
+        const phone = document.getElementById("phone").value;
+        
+        // Disable button and show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">⏳</span> Processing...';
+        }
+        
+        showMessage('loading', 'Processing your registration...', 0);
+        
+        // Register user
+        const res = await registerUser(name, phone);
+        
+        // Re-enable button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit for VCF & Join Channel';
+        }
+        
+        if (!res.ok) {
+            showMessage('error', res.msg);
+            return;
+        }
+        
+        // SUCCESS - Show success message
+        showMessage('success', '✅ Registration successful!', 2000);
+        
+        // Update counter immediately
+        await updateCounters();
+        
+        // Clear form
+        form.reset();
+        
+        // Redirect to WhatsApp after 2 seconds
+        console.log("🔗 Redirecting to WhatsApp...");
         setTimeout(() => {
-          window.open(WHATSAPP_CHANNEL, '_blank');
-        }, 100);
-      }
-    }, 1000);
-  });
-}
-
-/* ===============================
-   INPUT VALIDATION (REAL-TIME)
-================================ */
-// Phone input formatting
-const phoneInput = document.getElementById("phone");
-if (phoneInput) {
-  phoneInput.addEventListener("input", function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    
-    // Auto-format as user types
-    if (value.length > 3 && value.length <= 6) {
-      value = value.replace(/(\d{3})(\d+)/, '$1-$2');
-    } else if (value.length > 6) {
-      value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
-    }
-    
-    e.target.value = value;
-  });
-}
-
-// Name input validation
-const nameInput = document.getElementById("name");
-if (nameInput) {
-  nameInput.addEventListener("blur", function(e) {
-    if (e.target.value.length > 0 && e.target.value.length < 2) {
-      formMsg.textContent = "Name should be at least 2 characters";
-      formMsg.className = "message warning";
-    }
-  });
+            window.open(WHATSAPP_CHANNEL, '_blank');
+            // Also change location if you want
+            // window.location.href = WHATSAPP_CHANNEL;
+        }, 2000);
+    });
 }
 
 /* ===============================
    INITIALIZATION
 ================================ */
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("Guru Gains VCF System Initialized");
-  
-  // Initial counter update
-  await updateCounters();
-  
-  // Auto-refresh counters every 30 seconds
-  setInterval(updateCounters, 30000);
-  
-  // Add loading animation
-  const style = document.createElement('style');
-  style.textContent = `
-    .message {
-      padding: 12px;
-      border-radius: 6px;
-      margin: 15px 0;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-    .message.loading {
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeaa7;
-    }
-    .message.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .message.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .message.warning {
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeaa7;
-    }
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // Auto-focus name input
-  if (nameInput) {
-    setTimeout(() => nameInput.focus(), 100);
-  }
+    console.log("🎯 Guru V.C.F. 3 Initialized");
+    console.log("🔑 Supabase URL:", SUPABASE_URL);
+    console.log("🎯 Target:", TARGET);
+    console.log("📱 WhatsApp:", WHATSAPP_CHANNEL);
+    
+    // Add spinner animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .form-msg {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        .form-success {
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        .form-error {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        .form-loading {
+            background: rgba(13, 110, 253, 0.15);
+            color: #0d6efd;
+            border: 1px solid rgba(13, 110, 253, 0.3);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Load initial counters
+    await updateCounters();
+    
+    // Auto-refresh counters every 10 seconds
+    setInterval(updateCounters, 10000);
+    
+    // Add debug info to console
+    console.log("✅ System ready. Test with:");
+    console.log("   Name: Test User");
+    console.log("   Phone: 1234567890 (or any 10-digit number)");
 });
+
+/* ===============================
+   DEBUG FUNCTIONS
+================================ */
+// Test Supabase connection
+window.testConnection = async function() {
+    console.log("🔧 Testing Supabase connection...");
+    showMessage('loading', 'Testing connection...', 3000);
+    
+    try {
+        const { data, error } = await supabase
+            .from(TABLE)
+            .select('count')
+            .limit(1);
+        
+        if (error) {
+            console.error("❌ Connection test failed:", error);
+            showMessage('error', `Connection failed: ${error.message}`, 5000);
+            return false;
+        }
+        
+        console.log("✅ Connection test successful!");
+        showMessage('success', '✅ Supabase connection working!', 3000);
+        return true;
+    } catch (err) {
+        console.error("❌ Connection test error:", err);
+        showMessage('error', `Connection error: ${err.message}`, 5000);
+        return false;
+    }
+};
+
+// Manually add a test registration
+window.addTestRegistration = async function() {
+    const testName = "Test User " + Date.now().toString().slice(-4);
+    const testPhone = "1" + Date.now().toString().slice(-9);
+    
+    console.log("🧪 Adding test registration:", testName, testPhone);
+    showMessage('loading', 'Adding test registration...', 3000);
+    
+    const result = await registerUser(testName, testPhone);
+    
+    if (result.ok) {
+        console.log("✅ Test registration added!");
+        showMessage('success', '✅ Test registration added!', 3000);
+        await updateCounters();
+    } else {
+        console.log("❌ Test failed:", result.msg);
+        showMessage('error', `Test failed: ${result.msg}`, 5000);
+    }
+};
+
+// Check current count
+window.checkCount = async function() {
+    await updateCounters();
+};
+
+// Open browser console and run these commands to debug:
+console.log("🛠️  DEBUG COMMANDS:");
+console.log("   testConnection()   - Check Supabase connection");
+console.log("   addTestRegistration() - Add a test registration");
+console.log("   checkCount()       - Refresh counter");
